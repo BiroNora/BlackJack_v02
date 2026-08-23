@@ -6,7 +6,8 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 try:
-    from my_app.backend.app import app, db, User
+    from my_app.backend.app import app, db
+    from my_app.backend.models import User
 except ImportError as e:
     # Ez a hiba akkor jön elő, ha az app, db, vagy User hiányzik az app.py-ból.
     print(f"Kritikus hiba az importálás során: {e}")

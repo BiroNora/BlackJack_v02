@@ -8,9 +8,9 @@ from flask import Flask, jsonify, render_template, request, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.sql import func
 
+from my_app.backend.models import db, User
+from my_app.backend.services.user_service import UserService
 from my_app.backend.game import Game
 from my_app.backend.game_serializer import GameSerializer
 from my_app.backend.phase_state import PhaseState
@@ -47,36 +47,14 @@ DATABASE_URL = os.environ.get(
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db = SQLAlchemy(app)
+db.init_app(app)
 
 # Logging finomhangolás
 log = logging.getLogger("werkzeug")
 log.setLevel(logging.ERROR)
 
-
-# =========================================================================
-# MODEL
-# =========================================================================
-class User(db.Model):
-    __tablename__ = "my_users"
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    client_id = db.Column(
-        db.String(36), unique=True, nullable=False, default=lambda: str(uuid.uuid4())
-    )
-    tokens = db.Column(db.Integer, default=1000)
-    current_game_state = db.Column(JSONB, nullable=True)
-    idempotency_key = db.Column(db.String(36), nullable=True)
-    last_activity = db.Column(
-        db.TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
-
-    def __repr__(self):
-        return f"<User {self.id[:8]} (Client: {self.client_id[:8]})>"
-
-
 with app.app_context():
     db.create_all()
-
 
 # =========================================================================
 # AUTH DECORATORS
@@ -177,6 +155,20 @@ def with_game_state(f):
             db.session.commit()
 
         return response
+
+    return decorated_function
+
+
+def with_user_service(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        db_session = db.session
+        service = UserService(db_session)
+
+        # Hozzáadjuk a user_service-t a paraméterekhez
+        kwargs["user_service"] = service
+
+        return f(*args, **kwargs)
 
     return decorated_function
 
