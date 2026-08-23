@@ -353,7 +353,6 @@ def check_session(user_service):
             {
                 "status": "success",
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
-                "history": user.history,
                 "current_tokens": user.tokens,
             }
         ),
@@ -410,7 +409,6 @@ def handle_auth(user_service):
             {
                 "status": "success",
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
-                "history": user.history,
                 "current_tokens": user.tokens,
             }
         ),
