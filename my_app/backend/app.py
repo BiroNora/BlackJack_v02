@@ -5,13 +5,12 @@ import math
 from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request, session
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.exc import IntegrityError
 
 from my_app.backend.models import db, User
 from my_app.backend.services.user_service import UserService
-from my_app.backend.game import Game
+from my_app.backend.game import TOTAL_INITIAL_CARDS, Game
 from my_app.backend.game_serializer import GameSerializer
 from my_app.backend.phase_state import PhaseState
 
@@ -55,6 +54,7 @@ log.setLevel(logging.ERROR)
 
 with app.app_context():
     db.create_all()
+
 
 # =========================================================================
 # AUTH DECORATORS
@@ -226,7 +226,7 @@ def index():
 # =========================================================================
 # GAME API ENDPOINTS
 # =========================================================================
-# 0
+# 0/1
 @app.route("/api/initialize_session", methods=["POST"])
 @api_error_handler
 def initialize_session():
@@ -320,7 +320,98 @@ def initialize_session():
                 "tokens": user.tokens,
                 "game_state": custom_game_state,
                 "game_state_hint": "USER_SESSION_INITIALIZED",
-                "total_initial_cards": Game.TOTAL_INITIAL_CARDS,
+                "total_initial_cards": TOTAL_INITIAL_CARDS,
+            }
+        ),
+        200,
+    )
+
+
+# 0/2
+@app.route("/api/check_session", methods=["POST"])
+@api_error_handler
+@with_user_service
+def check_session(user_service):
+    user = user_service.handle_check_session(session, request)
+
+    if not user:
+        return (
+            jsonify(
+                {
+                    "status": "not_logged_in",
+                    "game_state": {"target_phase": PhaseState.LOADING.value},
+                }
+            ),
+            200,
+        )
+
+    raw_game = getattr(user, "current_game_state")
+    game = Game.deserialize(raw_game) if isinstance(raw_game, (dict, str)) else raw_game
+
+    return (
+        jsonify(
+            {
+                "status": "success",
+                "game_state": GameSerializer.serialize_by_context(game, request.path),
+                "history": user.history,
+                "current_tokens": user.tokens,
+            }
+        ),
+        200,
+    )
+
+
+# 0/3
+@app.route("/api/handle_auth", methods=["POST"])
+@api_error_handler
+@with_user_service
+def handle_auth(user_service):
+    data = request.get_json()
+    email = data.get("email")
+    username = data.get("username")
+    password = data.get("password")
+    is_login = data.get("is_login")
+    is_first_in = data.get("is_first_in")
+    print("439 is_first_in", is_first_in)
+
+    current_user_id = None if is_login else session.get("user_id")
+
+    try:
+        user = user_service.handle_user_auth(
+            email, username, password, is_login, current_user_id
+        )
+    except ValueError as e:
+        return (
+            jsonify(
+                {
+                    "status": str(e),
+                }
+            ),
+            200,
+        )
+
+    session["user_id"] = user.id
+
+    if is_first_in:
+        game = getattr(user, "current_game_state", None)
+        if game:
+            if isinstance(game, dict):
+                game = Game.deserialize(game)
+            game.clear_up()
+            game.deck = [None] * TOTAL_INITIAL_CARDS
+            user.current_game_state = game.serialize()
+
+        db.session.commit()
+
+    game = getattr(user, "current_game_state")
+
+    return (
+        jsonify(
+            {
+                "status": "success",
+                "game_state": GameSerializer.serialize_by_context(game, request.path),
+                "history": user.history,
+                "current_tokens": user.tokens,
             }
         ),
         200,
@@ -710,9 +801,11 @@ def split_stand_and_rewards(user, game):
     game_data = GameSerializer.serialize_by_context(game, request.path)
 
     game_data["pre_phase"] = (
-            PhaseState.OUT_OF_TOKENS.value if user.tokens <= 0 and (not game_data["players"] or len(game_data["players"]) == 0) else
-            PhaseState.BETTING.value
-        )
+        PhaseState.OUT_OF_TOKENS.value
+        if user.tokens <= 0
+        and (not game_data["players"] or len(game_data["players"]) == 0)
+        else PhaseState.BETTING.value
+    )
 
     return (
         jsonify(
@@ -755,12 +848,12 @@ def set_restart(user, game):
 @app.route("/api/force_restart", methods=["POST"])
 @api_error_handler
 @login_required
-def force_restart_by_client_id(user):
+@with_game_state
+def force_restart_by_client_id(user, game):
     session.clear()
     session["user_id"] = user.id
     session.permanent = True
 
-    game = Game()
     game.restart_game()
 
     user.current_game_state = game.serialize()

@@ -36,6 +36,14 @@ export interface GameStateData {
   pre_phase: GameState | null;
 }
 
+export interface ApiResponse {
+  status: string;
+  message?: string;
+  current_tokens: number;
+  game_state: GameStateData; // Csak a játék adatai
+  game_state_hint: string;
+}
+
 export interface PlayerData {
   id: string;
   hand: string[];
@@ -90,6 +98,7 @@ export type GameStateMachineHookResult = {
     newState: GameState,
     newData?: Partial<GameStateData>
   ) => void;
+  handleSkipAuth: () => Promise<void>;
   handleOnContinue: () => void;
   handleOnStartNew: () => void;
   handlePlaceBet: (amount: number) => Promise<void>;

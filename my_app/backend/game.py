@@ -9,13 +9,13 @@ from my_app.backend.hand_state import HandState
 from my_app.backend.phase_state import PhaseState
 from my_app.backend.winner_state import WinnerState
 
+NUM_DECKS = 2
+CARDS_IN_DECK = 52
+TOTAL_INITIAL_CARDS = NUM_DECKS * CARDS_IN_DECK
 
 
 class Game:
     NONE = 0
-    NUM_DECKS = 2
-    CARDS_IN_DECK = 52
-    TOTAL_INITIAL_CARDS = NUM_DECKS * CARDS_IN_DECK
     BJ_IMMEDIATE_STOP = {WinnerState.BLACKJACK_PLAYER_WON, WinnerState.BLACKJACK_PUSH}
 
     def __init__(self):
@@ -63,7 +63,7 @@ class Game:
         self.ranks = ["A", "K", "Q", "J", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
         # self.ranks = ["A", "K", "K", "K", "9", "10"]
         self.deck = []
-        self.deck_len_init = Game.TOTAL_INITIAL_CARDS
+        self.deck_len_init = TOTAL_INITIAL_CARDS
         self.bet: int = 0
         self.bet_list = []
         self.is_round_active = False
@@ -78,7 +78,7 @@ class Game:
         card2 = self.deck.pop(0)
         card3 = self.deck.pop(0)
         card4 = self.deck.pop(0)
-        
+
         player_hand = [card1, card3]
         dealer_hand = [card2, card4]
         dealer_masked = [" ✪ ", card4]
@@ -339,13 +339,12 @@ class Game:
         self.set_split_req(1)
 
         self.target_phase = (
-            PhaseState.SPLIT_ACE_TRANSIT    if self.aces else
-            PhaseState.SPLIT_NAT21_TRANSIT  if is_nat21 else
-            PhaseState.SPLIT_TURN
+            PhaseState.SPLIT_ACE_TRANSIT
+            if self.aces
+            else PhaseState.SPLIT_NAT21_TRANSIT if is_nat21 else PhaseState.SPLIT_TURN
         )
         self.pre_phase = (
-            PhaseState.SPLIT_STAND if is_nat21 and not self.aces else
-            PhaseState.NONE
+            PhaseState.SPLIT_STAND if is_nat21 and not self.aces else PhaseState.NONE
         )
 
     def deal_card(self, hand, is_first, hand_id):
@@ -382,8 +381,9 @@ class Game:
             self.players_index[ID] = True
 
         self.target_phase = (
-            PhaseState.SPLIT_FINISH if self.split_req == 0 else
-            PhaseState.SPLIT_ACE_TRANSIT # if self.aces
+            PhaseState.SPLIT_FINISH
+            if self.split_req == 0
+            else PhaseState.SPLIT_ACE_TRANSIT  # if self.aces
         )
 
     def find_smallest_false_stated_id(self):
@@ -437,10 +437,17 @@ class Game:
         self.player["can_split"] = can_split
 
         self.target_phase = (
-            PhaseState.SPLIT_NAT21_TRANSIT  if not self.aces and state == HandState.TWENTY_ONE else
-            PhaseState.SPLIT_ACE_TRANSIT    if self.aces and self.split_req != 0 else
-            PhaseState.SPLIT_FINISH         if self.aces and self.split_req == 0 else
-            PhaseState.SPLIT_TURN
+            PhaseState.SPLIT_NAT21_TRANSIT
+            if not self.aces and state == HandState.TWENTY_ONE
+            else (
+                PhaseState.SPLIT_ACE_TRANSIT
+                if self.aces and self.split_req != 0
+                else (
+                    PhaseState.SPLIT_FINISH
+                    if self.aces and self.split_req == 0
+                    else PhaseState.SPLIT_TURN
+                )
+            )
         )
         self.pre_phase = (
             PhaseState.SPLIT_STAND if state == HandState.TWENTY_ONE else PhaseState.NONE

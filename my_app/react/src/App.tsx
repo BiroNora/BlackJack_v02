@@ -1,7 +1,6 @@
 import Cards from "./components/Cards";
 import { ErrorPage } from "./components/ErrorPage";
 import HeaderTitles from "./components/HeaderTitles";
-import { Loading } from "./components/Loading";
 import { OutOfTokens } from "./components/OutOfTokens";
 import PlayButtons from "./components/PlayButtons";
 import PlayerDealer from "./components/PlayerDealer";
@@ -21,10 +20,15 @@ import SplitPlayerDealerMasked from "./components/SplitPlayerDealerMasked";
 import { Reloading } from "./components/Reloading";
 import RecoveryDec from "./components/RecoveryDec";
 import UniqueBetBank from "./components/UniqueBetBank";
+import Loading from "./components/Loading";
+import { useState } from "react";
 
 function App() {
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isFirstIn, setIsFirstIn] = useState(false);
   const {
     gameState,
+    handleSkipAuth,
     handleOnContinue,
     handleOnStartNew,
     handlePlaceBet,
@@ -69,7 +73,15 @@ function App() {
               return (
                 <div>
                   <PageWrapper>
-                    <Loading />
+                    <Loading
+                      onOpenAuth={() => {
+                        setIsFirstIn(true);
+                        setIsAuthOpen(true);
+                      }}
+                      onSkipAuth={() => handleSkipAuth()}
+                      isAuthOpen={isAuthOpen}
+                      isWFSR={isWFSR}
+                    />
                   </PageWrapper>
                 </div>
               );
