@@ -5,8 +5,9 @@ import math
 from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request, session
-from datetime import datetime, timedelta, timezone
+from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.exc import IntegrityError
+from datetime import datetime, timedelta, timezone
 
 from my_app.backend.models import db, User
 from my_app.backend.services.user_service import UserService
@@ -392,17 +393,33 @@ def handle_auth(user_service):
     session["user_id"] = user.id
 
     if is_first_in:
-        game = getattr(user, "current_game_state", None)
-        if game:
-            if isinstance(game, dict):
-                game = Game.deserialize(game)
+        raw_game = getattr(user, "current_game_state", None)
+        if raw_game:
+            game = (
+                Game.deserialize(raw_game)
+                if isinstance(raw_game, (dict, str))
+                else raw_game
+            )
+
             game.clear_up()
             game.deck = [None] * TOTAL_INITIAL_CARDS
             user.current_game_state = game.serialize()
+            flag_modified(user, "current_game_state")
 
         db.session.commit()
 
-    game = getattr(user, "current_game_state")
+    raw_game = getattr(user, "current_game_state")
+    if raw_game:
+        game = (
+            Game.deserialize(raw_game)
+            if isinstance(raw_game, (dict, str))
+            else raw_game
+        )
+    else:
+        # Biztonsági fallback, ha valamiért üres lenne
+        game = Game()
+        user.current_game_state = game.serialize()
+        db.session.commit()
 
     return (
         jsonify(

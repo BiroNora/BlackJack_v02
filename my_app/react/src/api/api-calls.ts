@@ -33,6 +33,35 @@ export async function checkSessionAPI() {
   return await callApiEndpoint("/api/check_session", "POST", {});
 }
 
+export async function setAuth(
+  email: string,
+  username: string,
+  password: string,
+  isLogIn: boolean,
+  isFirstIn: boolean,
+) {
+  return await callApiEndpoint("/api/handle_auth", "POST", {
+    email: email,
+    username: username,
+    password: password,
+    is_login: isLogIn,
+    is_first_in: isFirstIn,
+  });
+}
+
+export async function handleForgotPasswordAPI(identifier: string, isFirstIn: boolean,) {
+  return await callApiEndpoint(`/api/forgot_password`, "POST", {
+    identifier: identifier,
+    is_first_in: isFirstIn,
+  });
+}
+
+export async function setForgotPasswordSubmit(token: string, password: string) {
+  return await callApiEndpoint(`/api/reset_password/${token}`, "POST", {
+    password: password,
+  });
+}
+
 export async function clearGameState() {
   const data = await callApiEndpoint("/api/clear_game_state", "POST");
 

@@ -17,7 +17,8 @@ export type GameState =
   | "OUT_OF_TOKENS"
   | "RESTART_GAME"
   | "ERROR"
-  | "RELOADING";
+  | "RELOADING"
+  | "FORGOT_PASSWORD";
 
 export interface GameStateData {
   currentGameState: GameState;
@@ -96,9 +97,25 @@ export type GameStateMachineHookResult = {
   currentGameState: GameState;
   transitionToState: (
     newState: GameState,
-    newData?: Partial<GameStateData>
+    newData?: Partial<GameStateData>,
   ) => void;
   handleSkipAuth: () => Promise<void>;
+  handleAuth: (
+    email: string,
+    username: string,
+    password: string,
+    isLogIn: boolean,
+    isFirstIn: boolean,
+  ) => Promise<{ status: string } | void>;
+  handleCloseNewPassCase: () => void;
+  handleForgotPassword: (
+    identifier: string,
+    isFirstIn: boolean,
+  ) => Promise<{ status: string } | void>;
+  handleForgotPasswordSubmit: (
+    token: string,
+    password: string,
+  ) => Promise<{ status: string } | void>;
   handleOnContinue: () => void;
   handleOnStartNew: () => void;
   handlePlaceBet: (amount: number) => Promise<void>;

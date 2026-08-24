@@ -22,12 +22,19 @@ import RecoveryDec from "./components/RecoveryDec";
 import UniqueBetBank from "./components/UniqueBetBank";
 import Loading from "./components/Loading";
 import { useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
+import { ForgotPasswordModal } from "./components/ForgotPasswordModal";
+import { AuthModal } from "./components/AuthModal";
 
 function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isFirstIn, setIsFirstIn] = useState(false);
   const {
     gameState,
+    handleAuth,
+    handleCloseNewPassCase,
+    handleForgotPassword,
+    handleForgotPasswordSubmit,
     handleSkipAuth,
     handleOnContinue,
     handleOnStartNew,
@@ -63,9 +70,58 @@ function App() {
     );
   }
 
+  // Segédfg, megnyitja a login modalt a betting felületen sikeres
+  // jelszó módosítás után
+  const handlePasswordResetAndOpenLogin = async (
+    token: string,
+    password: string,
+  ) => {
+    const result = await handleForgotPasswordSubmit(token, password);
+    if (result?.status === "IC") {
+      handleCloseNewPassCase();
+      return result;
+    }
+    toast("Password successfully changed!", {
+      duration: 3000,
+      id: "password-changed-toast",
+    });
+
+    setTimeout(() => {
+      setIsAuthOpen(true);
+    }, 3000);
+  };
+
   return (
     <>
       <HeaderTitles />
+      <AnimatePresence>
+        {isAuthOpen && (
+          <AuthModal
+            onClose={() => {
+              setIsAuthOpen(false);
+              setIsFirstIn(false);
+            }}
+            onAuthSubmit={handleAuth}
+            onHandleForgotPassword={handleForgotPassword}
+            isFirstIn={isFirstIn}
+          />
+        )}
+      </AnimatePresence>
+      <Toaster
+        position="top-center"
+        containerStyle={{
+          top: "40%",
+        }}
+        toastOptions={{
+          duration: 2000,
+          style: {
+            borderRadius: "10px",
+            padding: "0.5rem",
+            fontStyle: "italic",
+            minWidth: "250px",
+          },
+        }}
+      />
       <AnimatePresence mode="wait">
         {(() => {
           switch (gameState.currentGameState) {
@@ -346,6 +402,17 @@ function App() {
                   <div className="players-area-wrapper">
                     <SplitPlayers gameState={gameState} />
                   </div>
+                </div>
+              );
+            case "FORGOT_PASSWORD":
+              return (
+                <div>
+                  <PageWrapper>
+                    <ForgotPasswordModal
+                      onCloseForm={handleCloseNewPassCase}
+                      onResetSubmit={handlePasswordResetAndOpenLogin}
+                    />
+                  </PageWrapper>
                 </div>
               );
             case "OUT_OF_TOKENS":
