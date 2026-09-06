@@ -28,7 +28,6 @@ import { AuthModal } from "./components/AuthModal";
 
 function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isFirstIn, setIsFirstIn] = useState(false);
   const {
     gameState,
     handleAuth,
@@ -97,13 +96,11 @@ function App() {
       <AnimatePresence>
         {isAuthOpen && (
           <AuthModal
-            onClose={() => {
-              setIsAuthOpen(false);
-              setIsFirstIn(false);
-            }}
+            onClose={() =>
+              setIsAuthOpen(false)
+            }
             onAuthSubmit={handleAuth}
             onHandleForgotPassword={handleForgotPassword}
-            isFirstIn={isFirstIn}
           />
         )}
       </AnimatePresence>
@@ -130,10 +127,8 @@ function App() {
                 <div>
                   <PageWrapper>
                     <Loading
-                      onOpenAuth={() => {
-                        setIsFirstIn(true);
-                        setIsAuthOpen(true);
-                      }}
+                      onOpenAuth={() =>
+                        setIsAuthOpen(true)}
                       onSkipAuth={() => handleSkipAuth()}
                       isAuthOpen={isAuthOpen}
                       isWFSR={isWFSR}
@@ -165,13 +160,23 @@ function App() {
             case "INIT_GAME":
               return (
                 <div>
-                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
+                  <Cards
+                    gameState={gameState}
+                    initDeckLen={initDeckLen}
+                    onOpenAuth={() =>
+                        setIsAuthOpen(true)}
+                  />
                 </div>
               );
             case "BETTING":
               return (
                 <div>
-                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
+                  <Cards
+                    gameState={gameState}
+                    initDeckLen={initDeckLen}
+                    onOpenAuth={() =>
+                        setIsAuthOpen(true)}
+                  />
                   <Betting
                     gameState={gameState}
                     onPlaceBet={handlePlaceBet}
@@ -184,7 +189,11 @@ function App() {
             case "MAIN_TURN":
               return (
                 <div>
-                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
+                  <Cards
+                    gameState={gameState}
+                    initDeckLen={initDeckLen}
+                    onOpenAuth={() => setIsAuthOpen(true)}
+                  />
                   <div className="player-dealer-area-wrapper">
                     <PlayerDealerMasked
                       gameState={gameState}
@@ -214,7 +223,11 @@ function App() {
             case "MAIN_STAND":
               return (
                 <div>
-                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
+                  <Cards
+                    gameState={gameState}
+                    initDeckLen={initDeckLen}
+                    onOpenAuth={() => setIsAuthOpen(true)}
+                  />
                   <div className="player-dealer-area-wrapper">
                     <PlayerDealer gameState={gameState} />
                   </div>
@@ -232,7 +245,11 @@ function App() {
             case "MAIN_STAND_REWARDS_TRANSIT":
               return (
                 <div>
-                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
+                  <Cards
+                    gameState={gameState}
+                    initDeckLen={initDeckLen}
+                    onOpenAuth={() => setIsAuthOpen(true)}
+                  />
                   <div className="player-dealer-area-wrapper">
                     <PlayerDealerMasked
                       gameState={gameState}
@@ -253,7 +270,11 @@ function App() {
             case "SPLIT_TURN":
               return (
                 <div>
-                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
+                  <Cards
+                    gameState={gameState}
+                    initDeckLen={initDeckLen}
+                    onOpenAuth={() => setIsAuthOpen(true)}
+                  />
                   <div className="player-dealer-area-wrapper">
                     <SplitPlayerDealerMasked gameState={gameState} />
                   </div>
@@ -281,7 +302,11 @@ function App() {
             case "SPLIT_STAND":
               return (
                 <div>
-                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
+                  <Cards
+                    gameState={gameState}
+                    initDeckLen={initDeckLen}
+                    onOpenAuth={() => setIsAuthOpen(true)}
+                  />
                   <div className="player-dealer-area-wrapper">
                     <SplitPlayerDealerMasked gameState={gameState} />
                   </div>
@@ -302,7 +327,11 @@ function App() {
             case "SPLIT_STAND_DOUBLE":
               return (
                 <div>
-                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
+                  <Cards
+                    gameState={gameState}
+                    initDeckLen={initDeckLen}
+                    onOpenAuth={() => setIsAuthOpen(true)}
+                  />
                   <div className="player-dealer-area-wrapper">
                     <SplitPlayerDealerMasked gameState={gameState} />
                   </div>
@@ -323,7 +352,11 @@ function App() {
             case "SPLIT_NAT21_TRANSIT":
               return (
                 <div>
-                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
+                  <Cards
+                    gameState={gameState}
+                    initDeckLen={initDeckLen}
+                    onOpenAuth={() => setIsAuthOpen(true)}
+                  />
                   <div className="player-dealer-area-wrapper">
                     <SplitPlayerDealerMasked gameState={gameState} />
                   </div>
@@ -344,7 +377,11 @@ function App() {
             case "SPLIT_FINISH":
               return (
                 <div>
-                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
+                  <Cards
+                    gameState={gameState}
+                    initDeckLen={initDeckLen}
+                    onOpenAuth={() => setIsAuthOpen(true)}
+                  />
                   <div className="player-dealer-area-wrapper">
                     <PlayerDealer gameState={gameState} />
                   </div>
@@ -365,7 +402,11 @@ function App() {
             case "SPLIT_FINISH_OUTCOME":
               return (
                 <div>
-                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
+                  <Cards
+                    gameState={gameState}
+                    initDeckLen={initDeckLen}
+                    onOpenAuth={() => setIsAuthOpen(true)}
+                  />
                   <div className="player-dealer-area-wrapper">
                     <PlayerDealer gameState={gameState} />
                   </div>
@@ -386,7 +427,11 @@ function App() {
             case "SPLIT_ACE_TRANSIT":
               return (
                 <div>
-                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
+                  <Cards
+                    gameState={gameState}
+                    initDeckLen={initDeckLen}
+                    onOpenAuth={() => setIsAuthOpen(true)}
+                  />
                   <div className="player-dealer-area-wrapper">
                     <SplitPlayerDealerMasked gameState={gameState} />
                   </div>
@@ -415,6 +460,17 @@ function App() {
                   </PageWrapper>
                 </div>
               );
+            case "CONFLICT":
+            return (
+              <div>
+                <PageWrapper>
+                  <ConflictResultModal
+                    onClose={handleCloseConflict}
+                    onResolve={handleResolveConflict}
+                  />
+                </PageWrapper>
+              </div>
+            );
             case "OUT_OF_TOKENS":
               return (
                 <div>

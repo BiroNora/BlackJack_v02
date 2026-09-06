@@ -5,6 +5,7 @@ from sqlalchemy import or_
 from my_app.backend.app import User
 from my_app.backend.game import Game
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.orm.attributes import flag_modified
 
 from datetime import datetime, timedelta, timezone
 
@@ -21,19 +22,42 @@ class UserService:
         """
         if is_login:
             # --- BEJELENTKEZÉS ---
-            user = (
+            target_user = (
                 self.db.query(User)
                 .filter(or_(User.email == email, User.user_name == username))
                 .first()
             )
 
-            if not user or not check_password_hash(user.password_hash, password):
+            if not target_user or not check_password_hash(target_user.password_hash, password):
                 raise ValueError("IC")  # Invalid Credentials
 
-            user.is_guest = False
+            # Megvizsgáljuk, hogy van-e aktív vendég session (current_user_id),
+            # és az eltér-e a célfióktól
+            if current_user_id and current_user_id != target_user.id:
+                session_user = self.db.query(User).get(current_user_id)
+
+                if session_user and session_user.is_guest:
+                    # Megnézzük, hogy mindkét helyen van-e létező játékállapot
+                    db_raw = target_user.current_game_state
+                    session_raw = session_user.current_game_state
+
+                    has_db_game = db_raw is not None and db_raw != {}
+                    has_session_game = session_raw is not None and session_raw != {}
+
+                    # Ha mindkettőben van aktív játék, akkor CONFLICT van!
+                    if has_db_game and has_session_game:
+                        raise ValueError("CONFLICT")
+
+                    # Ha a session-ben van játék, de a célfiókban NINCS,
+                    # akkor simán átköltöztethetjük a session játékát a célfiókba, vagy összevonhatjuk
+                    elif has_session_game and not has_db_game:
+                        target_user.current_game_state = session_raw
+                        flag_modified(target_user, "current_game_state")
+
+            target_user.is_guest = False
             self.db.commit()
 
-            return user
+            return target_user
 
         else:
             # --- REGISZTRÁCIÓ ---

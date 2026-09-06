@@ -179,6 +179,7 @@ button:disabled {
   opacity: 0;
   transition: opacity 1s ease-out;
   padding-top: var(--extra-vertical-padding1);
+  justify-content: space-between;
 }
 
 .button-container.show-buttons {
@@ -187,6 +188,12 @@ button:disabled {
   gap: 0.5rem;
   opacity: 1;
 }
+.button-container button {
+  flex: 1 1 auto; /* Rugalmasan nyúlnak, hogy kitöltsék a helyet */
+  min-width: 70px; /* Vagy amekkora minimum szélesség kell nekik, hogy ne torzuljanak */
+  text-align: center;
+}
+
 
 .button-container1 {
   display: flex;

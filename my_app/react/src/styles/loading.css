@@ -1,17 +1,15 @@
-/* src/styles/loading.css */
-
 /* Ez a konténer felelős a LOADING... felirat középre igazításáért a képernyőn */
 .loading-container-centered {
   margin: 0 auto; /* Középre igazítás és nincs felesleges margó */
-  position: relative;
+  position: fixed;
+  top: clamp(7rem, 1.375vw, 20rem);
+  width: 100%; /* Teljes képernyő szélesség */
+  max-width: 1280px;
   display: flex;
   flex-direction: column; /* Egymás alá rendeződnek a gyermekek */
   align-items: flex-start;
   justify-content: flex-start;
-  min-height: 100vh; /* Teljes képernyő magasság */
-  width: 100%; /* Teljes képernyő szélesség */
-  position: fixed; /* Fixen a képernyőn, hogy ne befolyásolja más tartalom */
-  top: clamp(10rem, 1.375vw, 20rem);
+  min-height: clamp(2rem, 1.375vw, 2rem);
   background-color: transparent; /* Teljesen átlátszó háttér */
   z-index: 9999; /* Legyen felül, ha van más tartalom */
   box-sizing: border-box;

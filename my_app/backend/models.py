@@ -16,7 +16,7 @@ class User(db.Model):
         db.String(36), unique=True, nullable=False, default=lambda: str(uuid.uuid4())
     )
     is_guest = db.Column(db.Boolean, default=True, nullable=False)
-    tokens = db.Column(db.Integer, default=1000)
+    tokens = db.Column(db.Integer, default=INITIAL_TOKENS)
 
     email = db.Column(db.String(150), unique=True, nullable=True)
     user_name = db.Column(db.String(150), unique=True, nullable=True)

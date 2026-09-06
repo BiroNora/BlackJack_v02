@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import type { GameStateData } from "../types/game-types";
+import "../styles/cards.css";
 
 interface CardsProps {
   gameState: GameStateData;
   initDeckLen: number | null;
+  onOpenAuth: () => void;
 }
 
-const Cards: React.FC<CardsProps> = ({ gameState, initDeckLen }) => {
+const Cards: React.FC<CardsProps> = ({
+  gameState,
+  initDeckLen,
+  onOpenAuth,
+}) => {
   const { deck_len } = gameState;
   const [displayedDeckLen, setDisplayedDeckLen] = useState(deck_len);
   const [tmp, setTmp] = useState(initDeckLen);
@@ -33,8 +39,23 @@ const Cards: React.FC<CardsProps> = ({ gameState, initDeckLen }) => {
 
   return (
     <div className="cards merriweather" id="cards">
-      <span className="label">Cards:</span>
-      <span className="deck-count">{displayedDeckLen}</span>
+      <div className="cards-left">
+        <span className="label">Cards:</span>
+        <span className="deck-count">{displayedDeckLen}</span>
+      </div>
+
+      <div className="cards-right">
+        <a
+          href="#auth"
+          className="login-link"
+          onClick={(e) => {
+            e.preventDefault();
+            onOpenAuth();
+          }}
+        >
+          Log in / Sign up
+        </a>
+      </div>
     </div>
   );
 };

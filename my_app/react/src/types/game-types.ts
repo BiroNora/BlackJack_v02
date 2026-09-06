@@ -18,7 +18,8 @@ export type GameState =
   | "RESTART_GAME"
   | "ERROR"
   | "RELOADING"
-  | "FORGOT_PASSWORD";
+  | "FORGOT_PASSWORD"
+  | "CONFLICT";
 
 export interface GameStateData {
   currentGameState: GameState;
@@ -105,12 +106,10 @@ export type GameStateMachineHookResult = {
     username: string,
     password: string,
     isLogIn: boolean,
-    isFirstIn: boolean,
   ) => Promise<{ status: string } | void>;
   handleCloseNewPassCase: () => void;
   handleForgotPassword: (
     identifier: string,
-    isFirstIn: boolean,
   ) => Promise<{ status: string } | void>;
   handleForgotPasswordSubmit: (
     token: string,

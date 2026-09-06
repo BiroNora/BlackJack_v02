@@ -188,7 +188,6 @@ export function useGameStateMachine(): GameStateMachineHookResult {
       username: string,
       password: string,
       isLogIn: boolean,
-      isFirstIn: boolean = false,
     ): Promise<{ status: string } | void> => {
       if (!password || password.length < 6) {
         throw new Error("Password must be at least 6 characters long");
@@ -197,7 +196,7 @@ export function useGameStateMachine(): GameStateMachineHookResult {
 
       await executeAsyncAction(async () => {
         const data = await handleApiAction(() =>
-          setAuth(email, username, password, isLogIn, isFirstIn),
+          setAuth(email, username, password, isLogIn),
         );
 
         const resData = data as { status?: string };
@@ -205,6 +204,13 @@ export function useGameStateMachine(): GameStateMachineHookResult {
           resultStatus = resData.status;
           return;
         }
+
+        if (resData && resData.status === "CONFLICT") {
+            resultStatus = "CONFLICT";
+            // Itt nyithatod meg a modalt, pl.:
+            // openConflictModal({ email, username, password });
+            return;
+          }
 
         const response = extractGameStateData(data);
         if (!response) return;
@@ -225,7 +231,6 @@ export function useGameStateMachine(): GameStateMachineHookResult {
   const handleForgotPassword = useCallback(
     async (
       identifier: string,
-      isFirstIn: boolean = false,
     ): Promise<{ status: string } | void> => {
       if (!identifier || identifier.trim() === "") {
         toast("Missing email address", {
@@ -239,7 +244,7 @@ export function useGameStateMachine(): GameStateMachineHookResult {
 
       await executeAsyncAction(async () => {
         const data = await handleApiAction(() =>
-          handleForgotPasswordAPI(identifier, isFirstIn),
+          handleForgotPasswordAPI(identifier),
         );
 
         const resData = data as { status?: string; token?: string };

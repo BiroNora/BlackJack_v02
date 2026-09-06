@@ -1,0 +1,30 @@
+.cards.merriweather {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cards-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cards-right {
+  display: flex;
+  align-items: center;
+}
+
+.login-link {
+  color: #0d8a39;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-link:hover {
+  color: #f5f0f0;
+}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "../styles/loading.css";
+import "../styles/auth.css";
 import { motion } from "motion/react";
 
 interface LoadingProps {
@@ -59,8 +60,7 @@ const Loading: React.FC<LoadingProps> = ({
             >
               Log in to save your scores
             </button>
-          </div>
-          <div className="text">
+            
             <button
               className="submit-btn"
               onClick={(e) => {
@@ -78,4 +78,3 @@ const Loading: React.FC<LoadingProps> = ({
 };
 
 export default Loading;
-

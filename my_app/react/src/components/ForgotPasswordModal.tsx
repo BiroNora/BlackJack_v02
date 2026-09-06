@@ -88,7 +88,9 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordProps> = ({
         <button className="close-btn" onClick={onCloseForm}>
           ⏻
         </button>
-        <h2>Change Password</h2>
+        <div className="pd-top">
+          <h2>Change Password</h2>
+        </div>
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">

@@ -5,6 +5,9 @@ import math
 from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request, session
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timedelta, timezone
@@ -18,6 +21,7 @@ from my_app.backend.phase_state import PhaseState
 load_dotenv()
 
 MINIMUM_BET = 1
+INITIAL_TOKENS = 1000
 
 # =========================================================================
 # FLASK APPLICATION BASICS
@@ -36,6 +40,17 @@ app.config["SECRET_KEY"] = os.environ.get(
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=31)
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("VERCEL", "False") == "True"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
+
+# Flask limiter inicializálás
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=[
+        "200 per day",
+        "50 per hour",
+    ],  # Alapértelmezett korlátok az egész appra
+    storage_uri="memory://",  # Memóriában tárolja a számlálót
+)
 
 # =========================================================================
 # DATABASE SETUP (NEON POSTGRES)
@@ -371,10 +386,8 @@ def handle_auth(user_service):
     username = data.get("username")
     password = data.get("password")
     is_login = data.get("is_login")
-    is_first_in = data.get("is_first_in")
-    print("439 is_first_in", is_first_in)
 
-    current_user_id = None if is_login else session.get("user_id")
+    current_user_id = session.get("user_id")
 
     try:
         user = user_service.handle_user_auth(
@@ -392,23 +405,7 @@ def handle_auth(user_service):
 
     session["user_id"] = user.id
 
-    if is_first_in:
-        raw_game = getattr(user, "current_game_state", None)
-        if raw_game:
-            game = (
-                Game.deserialize(raw_game)
-                if isinstance(raw_game, (dict, str))
-                else raw_game
-            )
-
-            game.clear_up()
-            game.deck = [None] * TOTAL_INITIAL_CARDS
-            user.current_game_state = game.serialize()
-            flag_modified(user, "current_game_state")
-
-        db.session.commit()
-
-    raw_game = getattr(user, "current_game_state")
+    raw_game = getattr(user, "current_game_state", None)
     if raw_game:
         game = (
             Game.deserialize(raw_game)
@@ -937,6 +934,109 @@ def clear_game_state(user, game):
         ),
         200,
     )
+
+
+# 8
+@app.route("/api/forgot_password", methods=["POST"])
+@limiter.limit("5 per minute")
+@api_error_handler
+@with_user_service
+def forgot_password(user_service):
+    data = request.get_json()
+    identifier = data.get("identifier")
+
+    user = user_service.get_user_by_identifier(identifier)
+
+    raw_game = getattr(user, "current_game_state", None)
+
+    has_game_state = raw_game is not None and raw_game != {}
+    if isinstance(raw_game, dict):
+        game = Game.deserialize(raw_game)
+    else:
+        game = Game()
+
+    if not has_game_state:
+        game.clear_up()
+        game.deck = [None] * TOTAL_INITIAL_CARDS
+        user.current_game_state = game.serialize()
+        flag_modified(user, "current_game_state")
+
+    db.session.commit()
+
+    try:
+        serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+        token = serializer.dumps(identifier, salt="password-reset-salt")
+    except:
+        return jsonify({"status": "IC"}), 200
+
+    return (
+        jsonify(
+            {
+                "status": "success",
+                "current_tokens": INITIAL_TOKENS,
+                "game_state": {
+                    "target_phase": "FORGOT_PASSWORD",
+                    "deck_len": game.get_deck_len(),
+                },
+                "token": token,
+            }
+        ),
+        200,
+    )
+
+
+# 9
+@app.route("/api/reset_password/<token>", methods=["POST"])
+@api_error_handler
+@with_user_service
+def reset_password(token, user_service):
+    serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+    try:
+        # A token 5 percig (300 másodpercig) érvényes
+        identifier = serializer.loads(token, salt="password-reset-salt", max_age=300)
+    except Exception:
+        return jsonify({"error": "The link is invalid or has expired."}), 400
+
+    data = request.get_json()
+    new_password = data.get("password")
+
+    if not new_password:
+        return jsonify({"status": "IC"}), 200
+
+    user = user_service.get_user_by_identifier(identifier)
+
+    if not user:
+        return jsonify({"status": "IC"}), 200
+
+    user_service.update_password(user, new_password)
+
+    return jsonify({"status": "success"}), 200
+
+
+# dedicated cron
+@app.route("/api/cron/cleanup-guests", methods=["GET"])
+@with_user_service
+def cron_cleanup_guests(user_service):
+    # Vercel Cron biztonsági ellenőrzés
+    auth_header = request.headers.get("Authorization")
+    cron_secret = os.environ.get("CRON_SECRET")
+
+    if not cron_secret or auth_header != f"Bearer {cron_secret}":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        deleted_count = user_service.delete_old_guests()
+        return (
+            jsonify(
+                {
+                    "status": "success",
+                    "message": f"Successfully deleted {deleted_count} old guest accounts.",
+                }
+            ),
+            200,
+        )
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 # 20

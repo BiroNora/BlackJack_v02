@@ -1,0 +1,162 @@
+.submit-btn {
+  font-weight: bold;
+  width: 100%;
+  padding: 0.7rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.text {
+  padding-top: 4rem;
+}
+
+.auth-overlay-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999; /* Hogy garantáltan minden felett legyen */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.auth-card {
+  background: #3fbd4d;
+  margin: 1rem;
+  padding: 1rem;
+  border: 1px solid #ca0404;
+  border-radius: 0.75rem;
+  max-width: 28rem;
+  color: #f4ecd3;
+  position: relative;
+  width: 100vw;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #f4ecd3;
+  cursor: pointer;
+}
+
+.pd-top {
+  padding-top: 15px;
+}
+
+.form-group {
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-height {
+  min-height: 6.5rem;
+}
+
+.form-group label {
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.form-group input {
+  padding: 0.7rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+}
+
+.submit-btn {
+  font-weight: bold;
+  width: 100%;
+  padding: 0.7rem;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.switch-text {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 300;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.helper-text {
+  font-size: 0.7rem;
+  margin-top: 0.5rem;
+  min-height: 1.5rem;
+}
+
+.forgot-text {
+  font-size: 1rem;
+  font-weight: 400;
+  padding-top: 2rem;
+}
+
+.guest-text {
+  min-height: 4rem;
+  font-size: 1.3rem;
+  font-weight: 400;
+}
+
+/* A wrapper, ami relatív pozíciót ad az input köré */
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 40px !important;
+}
+
+.password-input-wrapper .eye-toggle {
+  position: absolute;
+  right: 10px;
+  background: transparent !important;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: #f4f2f2;
+  box-shadow: none !important;
+}
+
+.password-input-wrapper .eye-toggle:hover,
+.password-input-wrapper .eye-toggle:focus,
+.password-input-wrapper .eye-toggle:active {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.pass-overlay-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+input#username::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
