@@ -199,7 +199,7 @@ export function useGameStateMachine(): GameStateMachineHookResult {
           setAuth(email, username, password, isLogIn),
         );
 
-        const resData = data as { status?: string };
+        const resData = data as { status?: string, is_guest?: boolean };
         if (resData && resData.status === "IC") {
           resultStatus = resData.status;
           return;
@@ -214,6 +214,10 @@ export function useGameStateMachine(): GameStateMachineHookResult {
 
         const response = extractGameStateData(data);
         if (!response) return;
+
+        if (resData && typeof resData.is_guest === "boolean") {
+          dispatch({ type: 'SET_IS_GUEST', payload: resData.is_guest });
+        }
         transitionToState(response?.target_phase as GameState, response);
       });
 
@@ -1177,6 +1181,7 @@ export function useGameStateMachine(): GameStateMachineHookResult {
   return {
     gameState: state.gameState,
     currentGameState: state.gameState.currentGameState,
+    isGuest: state.isGuest,
     transitionToState,
     handleStartGame,
     handleSkipAuth,

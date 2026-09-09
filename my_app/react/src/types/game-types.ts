@@ -136,6 +136,7 @@ export type GameStateMachineHookResult = {
   showInsLost: boolean;
   initDeckLen: number | null;
   isWFSR: boolean;
+  isGuest: boolean;
 };
 
 export const states = [

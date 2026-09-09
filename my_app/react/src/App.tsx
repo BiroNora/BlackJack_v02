@@ -25,6 +25,7 @@ import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { ForgotPasswordModal } from "./components/ForgotPasswordModal";
 import { AuthModal } from "./components/AuthModal";
+import { ConflictModal } from "./components/ConflictModal";
 
 function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -54,6 +55,7 @@ function App() {
     showInsLost,
     initDeckLen,
     isWFSR,
+    isGuest,
   } = useGameStateMachine();
 
   function PageWrapper({ children }: React.PropsWithChildren<object>) {
@@ -163,6 +165,7 @@ function App() {
                   <Cards
                     gameState={gameState}
                     initDeckLen={initDeckLen}
+                    isGuest={isGuest}
                     onOpenAuth={() =>
                         setIsAuthOpen(true)}
                   />
@@ -174,6 +177,7 @@ function App() {
                   <Cards
                     gameState={gameState}
                     initDeckLen={initDeckLen}
+                    isGuest={isGuest}
                     onOpenAuth={() =>
                         setIsAuthOpen(true)}
                   />
@@ -192,6 +196,7 @@ function App() {
                   <Cards
                     gameState={gameState}
                     initDeckLen={initDeckLen}
+                    isGuest={isGuest}
                     onOpenAuth={() => setIsAuthOpen(true)}
                   />
                   <div className="player-dealer-area-wrapper">
@@ -226,6 +231,7 @@ function App() {
                   <Cards
                     gameState={gameState}
                     initDeckLen={initDeckLen}
+                    isGuest={isGuest}
                     onOpenAuth={() => setIsAuthOpen(true)}
                   />
                   <div className="player-dealer-area-wrapper">
@@ -248,6 +254,7 @@ function App() {
                   <Cards
                     gameState={gameState}
                     initDeckLen={initDeckLen}
+                    isGuest={isGuest}
                     onOpenAuth={() => setIsAuthOpen(true)}
                   />
                   <div className="player-dealer-area-wrapper">
@@ -273,6 +280,7 @@ function App() {
                   <Cards
                     gameState={gameState}
                     initDeckLen={initDeckLen}
+                    isGuest={isGuest}
                     onOpenAuth={() => setIsAuthOpen(true)}
                   />
                   <div className="player-dealer-area-wrapper">
@@ -305,6 +313,7 @@ function App() {
                   <Cards
                     gameState={gameState}
                     initDeckLen={initDeckLen}
+                    isGuest={isGuest}
                     onOpenAuth={() => setIsAuthOpen(true)}
                   />
                   <div className="player-dealer-area-wrapper">
@@ -330,6 +339,7 @@ function App() {
                   <Cards
                     gameState={gameState}
                     initDeckLen={initDeckLen}
+                    isGuest={isGuest}
                     onOpenAuth={() => setIsAuthOpen(true)}
                   />
                   <div className="player-dealer-area-wrapper">
@@ -355,6 +365,7 @@ function App() {
                   <Cards
                     gameState={gameState}
                     initDeckLen={initDeckLen}
+                    isGuest={isGuest}
                     onOpenAuth={() => setIsAuthOpen(true)}
                   />
                   <div className="player-dealer-area-wrapper">
@@ -380,6 +391,7 @@ function App() {
                   <Cards
                     gameState={gameState}
                     initDeckLen={initDeckLen}
+                    isGuest={isGuest}
                     onOpenAuth={() => setIsAuthOpen(true)}
                   />
                   <div className="player-dealer-area-wrapper">
@@ -405,6 +417,7 @@ function App() {
                   <Cards
                     gameState={gameState}
                     initDeckLen={initDeckLen}
+                    isGuest={isGuest}
                     onOpenAuth={() => setIsAuthOpen(true)}
                   />
                   <div className="player-dealer-area-wrapper">
@@ -430,6 +443,7 @@ function App() {
                   <Cards
                     gameState={gameState}
                     initDeckLen={initDeckLen}
+                    isGuest={isGuest}
                     onOpenAuth={() => setIsAuthOpen(true)}
                   />
                   <div className="player-dealer-area-wrapper">
@@ -464,7 +478,7 @@ function App() {
             return (
               <div>
                 <PageWrapper>
-                  <ConflictResultModal
+                  <ConflictModal
                     onClose={handleCloseConflict}
                     onResolve={handleResolveConflict}
                   />

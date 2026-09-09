@@ -8,6 +8,7 @@ export interface GameDataState {
   showInsLost: boolean; // Felirathoz
   initDeckLen: number | null; // Animációhoz
   totalInitialCards: number | null;
+  isGuest: boolean;
 }
 
 // Definiáljuk az akciókat, ha még nincsenek a types-ban
@@ -19,6 +20,7 @@ export type GameAction =
   | { type: 'SET_BET_SNAPSHOTS'; payload: { bet: number; tokens: number } }
   | { type: 'SET_INS_PLACED'; payload: boolean }
   | { type: 'SET_SHOW_INS_LOST'; payload: boolean }
+  | { type: 'SET_IS_GUEST'; payload: boolean }
   | { type: 'RESET_TURN_VARIABLES' };
 
 export const initialGameDataState: GameDataState = {
@@ -44,6 +46,7 @@ export const initialGameDataState: GameDataState = {
   showInsLost: false,
   initDeckLen: null,
   totalInitialCards: null,
+  isGuest: true,
 };
 
 export function gameReducer(state: GameDataState, action: GameAction): GameDataState {
@@ -80,6 +83,8 @@ export function gameReducer(state: GameDataState, action: GameAction): GameDataS
       return { ...state, insPlaced: action.payload };
     case 'SET_SHOW_INS_LOST':
       return { ...state, showInsLost: action.payload };
+    case 'SET_IS_GUEST':
+      return { ...state, isGuest: action.payload };
     case 'RESET_TURN_VARIABLES':
       return {
         ...state,
