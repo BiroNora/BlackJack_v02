@@ -84,21 +84,18 @@ class UserService:
                 user.password_hash = generate_password_hash(password)
                 user.is_guest = False
             else:
+                initial_game = Game()
                 user = User(
                     email=email,
                     user_name=username,
                     password_hash=generate_password_hash(password),
                     is_guest=False,
+                    current_game_state=initial_game.serialize(),
                 )
-
-                initial_game = Game()
-                user.current_game_state = initial_game
-
                 self.db.add(user)
-                self.db.add(initial_game)
 
             self.db.commit()
-
+            
             return user
 
     def handle_check_session(self, session, request):
