@@ -334,6 +334,7 @@ def initialize_session():
                 "message": "User and game session initialized.",
                 "client_id": user.client_id,
                 "tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": custom_game_state,
                 "game_state_hint": "USER_SESSION_INITIALIZED",
                 "total_initial_cards": TOTAL_INITIAL_CARDS,
@@ -370,6 +371,7 @@ def check_session(user_service):
                 "status": "success",
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
             }
         ),
         200,
@@ -424,6 +426,7 @@ def handle_auth(user_service):
                 "status": "success",
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
             }
         ),
         200,
@@ -454,6 +457,7 @@ def bet(user, game):
             {
                 "status": "success",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "BET_SUCCESSFULLY_PLACED",
             }
@@ -482,6 +486,7 @@ def retake_bet(user, game):
             {
                 "status": "success",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "BET_SUCCESSFULLY_RETAKEN",
             }
@@ -503,6 +508,7 @@ def create_deck(user, game):
             {
                 "status": "success",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "DECK_CREATED",
             }
@@ -525,6 +531,7 @@ def start_game(user, game):
                 "status": "success",
                 "message": "New round initialized.",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "NEW_ROUND_INITIALIZED",
             }
@@ -554,6 +561,7 @@ def ins_request(user, game):
                 "status": "success",
                 "message": "Insurance placed successfully.",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "INSURANCE_PROCESSED",
             }
@@ -576,6 +584,7 @@ def hit(user, game):
                 "status": "success",
                 "tokens": user.tokens,
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "HIT_RECIEVED",
             }
@@ -606,6 +615,7 @@ def double_request(user, game):
                 "message": "Double placed successfully.",
                 "double_amount": amount_deducted,
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "DOUBLE_RECIEVED",
             }
@@ -637,6 +647,7 @@ def stand_and_rewards(user, game):
                 "status": "success",
                 "message": "Rewards processed and tokens updated.",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": game_data,
                 "game_state_hint": "REWARDS_PROCESSED",
             }
@@ -669,6 +680,7 @@ def split_request(user, game):
                 "status": "success",
                 "message": "Split hand placed successfully.",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "SPLIT_SUCCESS",
             }
@@ -691,6 +703,7 @@ def add_to_players_list_by_stand(user, game):
                 "status": "success",
                 "message": "Split hand placed successfully.",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "NEXT_SPLIT_HAND_ACTIVATED",
             }
@@ -716,6 +729,7 @@ def add_split_player_to_game(user, game):
                 "status": "success",
                 "message": "Split hand placed successfully.",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "NEXT_SPLIT_HAND_ACTIVATED",
             }
@@ -741,6 +755,7 @@ def add_player_from_players(user, game):
                 "status": "success",
                 "message": "Split hand placed successfully.",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "NEXT_SPLIT_HAND_ACTIVATED",
             }
@@ -763,6 +778,7 @@ def split_hit(user, game):
                 "status": "success",
                 "tokens": user.tokens,
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "HIT_RECIEVED",
             }
@@ -792,6 +808,7 @@ def split_double_request(user, game):
                 "status": "success",
                 "message": "Double placed successfully.",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "DOUBLE_RECIEVED",
             }
@@ -825,6 +842,7 @@ def split_stand_and_rewards(user, game):
                 "status": "success",
                 "message": "Rewards processed and tokens updated.",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": game_data,
                 "game_state_hint": "REWARDS_PROCESSED",
             }
@@ -848,6 +866,7 @@ def set_restart(user, game):
             {
                 "status": "success",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "HIT_RESTART",
             }
@@ -878,6 +897,7 @@ def force_restart_by_client_id(user, game):
             {
                 "status": "success",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "FORCE_RESTART_SUCCESSFUL",
             }
@@ -903,6 +923,7 @@ def recover_game_state(user, game):
                 "status": "success",
                 "message": "Game state recovered.",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "RECOVERY_DATA_LOADED",
             }
@@ -928,6 +949,7 @@ def clear_game_state(user, game):
                 "status": "success",
                 "message": "Game state cleared.",
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "GAME STATE CLEARED",
             }
@@ -974,6 +996,7 @@ def forgot_password(user_service):
             {
                 "status": "success",
                 "current_tokens": INITIAL_TOKENS,
+                "is_guest": user.is_guest,
                 "game_state": {
                     "target_phase": "FORGOT_PASSWORD",
                     "deck_len": game.get_deck_len(),

@@ -42,6 +42,7 @@ export interface ApiResponse {
   status: string;
   message?: string;
   current_tokens: number;
+  is_guest: boolean;
   game_state: GameStateData; // Csak a játék adatai
   game_state_hint: string;
 }
