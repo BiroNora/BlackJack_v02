@@ -12,11 +12,10 @@ from my_app.backend.winner_state import WinnerState
 NUM_DECKS = 2
 CARDS_IN_DECK = 52
 TOTAL_INITIAL_CARDS = NUM_DECKS * CARDS_IN_DECK
-
+BJ_IMMEDIATE_STOP = {WinnerState.BLACKJACK_PLAYER_WON, WinnerState.BLACKJACK_PUSH}
 
 class Game:
     NONE = 0
-    BJ_IMMEDIATE_STOP = {WinnerState.BLACKJACK_PLAYER_WON, WinnerState.BLACKJACK_PUSH}
 
     def __init__(self):
         self.player: Dict[str, Any] = {
@@ -105,7 +104,7 @@ class Game:
         self.target_phase = PhaseState.INIT_GAME
         self.pre_phase = (
             PhaseState.MAIN_STAND_REWARDS_TRANSIT
-            if self.natural_21 in Game.BJ_IMMEDIATE_STOP
+            if self.natural_21 in BJ_IMMEDIATE_STOP
             else PhaseState.MAIN_TURN
         )
 

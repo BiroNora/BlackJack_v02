@@ -1,6 +1,6 @@
 from typing import Any, Dict
 from my_app.backend.phase_state import PhaseState
-from my_app.backend.game import TOTAL_INITIAL_CARDS
+from my_app.backend.game import BJ_IMMEDIATE_STOP, TOTAL_INITIAL_CARDS
 
 
 class GameSerializer:
@@ -43,7 +43,8 @@ class GameSerializer:
             # Ha van aktív kártya és aktív kör
             if getattr(game, "player", None) and getattr(game, "is_round_active", None):
                 # A natural_21 alapján beállítjuk a megfelelő target_phase-t
-                if getattr(game, "natural_21", False):
+                natural_21_val = getattr(game, "natural_21", 0)
+                if natural_21_val in BJ_IMMEDIATE_STOP:
                     game.target_phase = PhaseState.MAIN_STAND_REWARDS_TRANSIT
                 else:
                     game.target_phase = PhaseState.MAIN_TURN

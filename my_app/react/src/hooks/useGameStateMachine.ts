@@ -219,6 +219,7 @@ export function useGameStateMachine(): GameStateMachineHookResult {
         if (resData && typeof resData.is_guest === "boolean") {
           dispatch({ type: "SET_IS_GUEST", payload: resData.is_guest });
         }
+        
         transitionToState(response?.target_phase as GameState, response);
       });
 
@@ -579,6 +580,11 @@ export function useGameStateMachine(): GameStateMachineHookResult {
           checkSessionAPI(),
         )) as ApiResponse;
         const response = extractGameStateData(sessionData);
+
+        const resData = sessionData as { is_guest?: boolean };
+        if (resData && typeof resData.is_guest === "boolean") {
+          dispatch({ type: "SET_IS_GUEST", payload: resData.is_guest });
+        }
 
         if (
           isMountedRef.current &&

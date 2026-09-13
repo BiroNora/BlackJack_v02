@@ -407,7 +407,7 @@ def handle_auth(user_service):
             )
             if target_user:
                 session["pending_target_user_id"] = target_user.id
-
+        print("409 error_code: ", error_code)
         return (
             jsonify(
                 {

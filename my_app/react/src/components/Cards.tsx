@@ -66,7 +66,7 @@ const Cards: React.FC<CardsProps> = ({
           ) : (
             <a
               href="#profile"
-              className="profile-link"
+              className="login-link"
               onClick={(e) => {
                 e.preventDefault();
                 if (onOpenProfile) onOpenProfile();
