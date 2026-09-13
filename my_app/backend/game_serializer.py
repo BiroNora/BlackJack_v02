@@ -35,6 +35,23 @@ class GameSerializer:
             return GameSerializer.serialize_start_game(game)
         if "clear_game_state" in p:
             return GameSerializer.serialize_clear_game_state(game)
+        if "handle_conflict" in p or "check_session" in p:
+            # Ha a játékosok listája létezik vagy split van, kezeljük splitként
+            if getattr(game, "players", None) or getattr(game, "split_req", 0) > 0:
+                return GameSerializer.serialize_split_hand(game)
+
+            # Ha van aktív kártya és aktív kör
+            if getattr(game, "player", None) and getattr(game, "is_round_active", None):
+                # A natural_21 alapján beállítjuk a megfelelő target_phase-t
+                if getattr(game, "natural_21", False):
+                    game.target_phase = PhaseState.MAIN_STAND_REWARDS_TRANSIT
+                else:
+                    game.target_phase = PhaseState.MAIN_TURN
+
+                return GameSerializer.serialize_initial_and_hit_state(game)
+
+            # Alapértelmezett / tétrakási fázis fallback
+            return GameSerializer.serialize_for_client_bets(game)
 
         if any(x in p for x in ["hit"]):
             return GameSerializer.serialize_initial_and_hit_state(game)

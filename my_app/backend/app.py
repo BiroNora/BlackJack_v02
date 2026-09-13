@@ -1,3 +1,4 @@
+from sqlalchemy import or_
 import os
 import uuid
 import logging
@@ -364,7 +365,7 @@ def check_session(user_service):
 
     raw_game = getattr(user, "current_game_state")
     game = Game.deserialize(raw_game) if isinstance(raw_game, (dict, str)) else raw_game
-
+    print("386 raw_game: ", raw_game)
     return (
         jsonify(
             {
@@ -396,14 +397,26 @@ def handle_auth(user_service):
             email, username, password, is_login, current_user_id
         )
     except ValueError as e:
+        error_code = str(e)
+
+        if error_code == "CONFLICT":
+            target_user = (
+                user_service.db.query(User)
+                .filter(or_(User.email == email, User.user_name == username))
+                .first()
+            )
+            if target_user:
+                session["pending_target_user_id"] = target_user.id
+
         return (
             jsonify(
                 {
-                    "status": str(e),
+                    "status": error_code,
                 }
             ),
             200,
         )
+
 
     session["user_id"] = user.id
 
@@ -958,7 +971,7 @@ def clear_game_state(user, game):
     )
 
 
-# 8
+# 20
 @app.route("/api/forgot_password", methods=["POST"])
 @limiter.limit("5 per minute")
 @api_error_handler
@@ -1008,7 +1021,7 @@ def forgot_password(user_service):
     )
 
 
-# 9
+# 21
 @app.route("/api/reset_password/<token>", methods=["POST"])
 @api_error_handler
 @with_user_service
@@ -1034,6 +1047,54 @@ def reset_password(token, user_service):
     user_service.update_password(user, new_password)
 
     return jsonify({"status": "success"}), 200
+
+
+# 22
+@app.route("/api/handle_conflict", methods=["POST"])
+@api_error_handler
+@with_user_service
+def handle_conflict(user_service):
+    data = request.get_json()
+    version_new = data.get("version_new")
+
+    current_user_id = session.get("user_id")
+    target_user_id = session.pop("pending_target_user_id", None)
+
+    if not target_user_id:
+        return jsonify({"status": "EXPIRED"}), 200
+
+    try:
+        user = user_service.handle_conflict(
+            current_user_id, target_user_id, version_new
+        )
+    except ValueError as e:
+        return jsonify({"status": str(e)}), 200
+
+    # Frissítjük a sessiont a végleges célfiók ID-jára
+    session["user_id"] = user.id
+
+    raw_game = getattr(user, "current_game_state", None)
+    if raw_game:
+        game = (
+            Game.deserialize(raw_game)
+            if isinstance(raw_game, (dict, str))
+            else raw_game
+        )
+    else:
+        game = Game()
+        user.current_game_state = game.serialize()
+        user_service.db.commit()
+
+    return (
+        jsonify(
+            {
+                "status": "success",
+                "game_state": GameSerializer.serialize_by_context(game, request.path),
+                "current_tokens": user.tokens,
+            }
+        ),
+        200,
+    )
 
 
 # dedicated cron

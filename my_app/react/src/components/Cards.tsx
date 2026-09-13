@@ -5,7 +5,7 @@ import "../styles/cards.css";
 interface CardsProps {
   gameState: GameStateData;
   initDeckLen: number | null;
-  isGuest: boolean;
+  isGuest?: boolean;
   onOpenAuth: () => void;
   onOpenProfile?: () => void;
 }
@@ -17,7 +17,7 @@ const Cards: React.FC<CardsProps> = ({
   onOpenAuth,
   onOpenProfile,
 }) => {
-  const { deck_len } = gameState;
+  const { deck_len, currentGameState } = gameState;
   const [displayedDeckLen, setDisplayedDeckLen] = useState(deck_len);
   const [tmp, setTmp] = useState(initDeckLen);
 
@@ -41,6 +41,8 @@ const Cards: React.FC<CardsProps> = ({
     }
   }, [deck_len, initDeckLen, tmp]);
 
+  const isBettingPhase = currentGameState === "BETTING" || !currentGameState;
+
   return (
     <div className="cards merriweather" id="cards">
       <div className="cards-left">
@@ -49,29 +51,30 @@ const Cards: React.FC<CardsProps> = ({
       </div>
 
       <div className="cards-right">
-        {isGuest ? (
-          <a
-            href="#auth"
-            className="login-link"
-            onClick={(e) => {
-              e.preventDefault();
-              onOpenAuth();
-            }}
-          >
-            Log in / Sign up
-          </a>
-        ) : (
-          <a
-            href="#profile"
-            className="profile-link"
-            onClick={(e) => {
-              e.preventDefault();
-              if (onOpenProfile) onOpenProfile();
-            }}
-          >
-            Go to your profile
-          </a>
-        )}
+        {isBettingPhase &&
+          (isGuest ? (
+            <a
+              href="#auth"
+              className="login-link"
+              onClick={(e) => {
+                e.preventDefault();
+                onOpenAuth();
+              }}
+            >
+              Log in / Sign up
+            </a>
+          ) : (
+            <a
+              href="#profile"
+              className="profile-link"
+              onClick={(e) => {
+                e.preventDefault();
+                if (onOpenProfile) onOpenProfile();
+              }}
+            >
+              Go to your profile
+            </a>
+          ))}
       </div>
     </div>
   );

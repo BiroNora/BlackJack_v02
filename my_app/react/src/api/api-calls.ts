@@ -1,5 +1,5 @@
 import type { ErrorResponse, SessionInitResponse } from "../types/game-types";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 export async function initializeSessionAPI(
   skipAuth: boolean = false,
@@ -14,7 +14,7 @@ export async function initializeSessionAPI(
     const data = await callApiEndpoint<SessionInitResponse>(
       "/api/initialize_session",
       "POST",
-      { client_id: clientUuid, skip_auth: skipAuth } // Elküldjük, de a szerver dönt, hogy elfogadja-e
+      { client_id: clientUuid, skip_auth: skipAuth }, // Elküldjük, de a szerver dönt, hogy elfogadja-e
     );
 
     // 3. Ha a szerver új/másik ID-t adott vissza, elmentjük emlékeztetőnek
@@ -44,6 +44,12 @@ export async function setAuth(
     username: username,
     password: password,
     is_login: isLogIn,
+  });
+}
+
+export async function handleConflictAPI(version_new: boolean) {
+  return await callApiEndpoint(`/api/handle_conflict`, "POST", {
+    version_new: version_new,
   });
 }
 
@@ -140,7 +146,7 @@ export async function addSplitPlayerToGame() {
 export async function addToPlayersListByStand() {
   const data = await callApiEndpoint(
     "/api/add_to_players_list_by_stand",
-    "POST"
+    "POST",
   );
 
   return data;
@@ -159,10 +165,7 @@ export async function handleSplitDouble() {
 }
 
 export async function handleSplitStandAndRewards() {
-  const data = await callApiEndpoint(
-    "/api/split_stand_and_rewards",
-    "POST"
-  );
+  const data = await callApiEndpoint("/api/split_stand_and_rewards", "POST");
 
   return data;
 }
@@ -196,13 +199,13 @@ export async function callApiEndpoint<T>(
   endpoint: string,
   method: string = "GET",
   body: ApiRequestBody = null,
-  isRetry: boolean = false
+  isRetry: boolean = false,
 ): Promise<T> {
   try {
     const options: RequestInit = {
       method: method,
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       credentials: "include", // Sütik küldése a sessionhöz
     };
@@ -241,13 +244,18 @@ export async function callApiEndpoint<T>(
       }
 
       // Speciális logolás szűrése
-      const isSplitHandError = status === 400 && (errorData.error === "No more split hands." || errorData.message === "No more split hands.");
+      const isSplitHandError =
+        status === 400 &&
+        (errorData.error === "No more split hands." ||
+          errorData.message === "No more split hands.");
       if (!isSplitHandError && status !== 401) {
         console.error(`API hiba (${status}):`, errorData);
       }
 
       // Hiba objektum összeállítása
-      const errorToThrow = new Error(errorData.message || `HTTP hiba: ${status}`) as HttpError;
+      const errorToThrow = new Error(
+        errorData.message || `HTTP hiba: ${status}`,
+      ) as HttpError;
       errorToThrow.response = {
         status: status,
         statusText: response.statusText,
@@ -258,12 +266,13 @@ export async function callApiEndpoint<T>(
 
     if (response.status === 204) return {} as T;
     return (await response.json()) as T;
-
   } catch (error: unknown) {
     // Típusbiztos hibakezelés a catch ágban
     const httpError = error as HttpError;
     const isAuthError = httpError.response?.status === 401;
-    const isSplitError = httpError.response?.status === 400 && httpError.response?.data?.error === "No more split hands.";
+    const isSplitError =
+      httpError.response?.status === 400 &&
+      httpError.response?.data?.error === "No more split hands.";
 
     if (!isAuthError && !isSplitError) {
       console.error("Váratlan hiba:", error);

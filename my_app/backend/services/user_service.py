@@ -28,7 +28,9 @@ class UserService:
                 .first()
             )
 
-            if not target_user or not check_password_hash(target_user.password_hash, password):
+            if not target_user or not check_password_hash(
+                target_user.password_hash, password
+            ):
                 raise ValueError("IC")  # Invalid Credentials
 
             # Megvizsgáljuk, hogy van-e aktív vendég session (current_user_id),
@@ -95,7 +97,7 @@ class UserService:
                 self.db.add(user)
 
             self.db.commit()
-            
+
             return user
 
     def handle_check_session(self, session, request):
@@ -148,3 +150,37 @@ class UserService:
 
         self.db.commit()
         return deleted_count
+
+    def handle_version(self, current_user_id, target_user_id, version_new):
+        """
+        Kezeli a konfliktust a sessionben tárolt azonosítók alapján.
+        :param version_new: True -> Az új (vendég session) játéka nyer, felülírja a célszámlát.
+                            False -> A régi (célszámla) játéka marad, a vendég törlődik.
+        """
+        target_user = self.db.query(User).get(target_user_id)
+        session_user = (
+            self.db.query(User).get(current_user_id) if current_user_id else None
+        )
+
+        if not target_user:
+            raise ValueError("IC")
+
+        if session_user and session_user.is_guest:
+            if version_new:
+                # Ha version_new True: a régi (célszámlán lévő) állapot marad,
+                # a vendég session fiókot pedig töröljük.
+                self.db.delete(session_user)
+            else:
+                # Ha version_new False: az új (vendég sessionben lévő) állapot nyer,
+                # felülírjuk vele a célszámla játékállapotát és tokenjeit.
+                if session_user.current_game_state:
+                    target_user.current_game_state = session_user.current_game_state
+                    if hasattr(session_user, "tokens"):
+                        target_user.tokens = session_user.tokens
+                    flag_modified(target_user, "current_game_state")
+                self.db.delete(session_user)
+
+        target_user.is_guest = False
+        self.db.commit()
+
+        return target_user

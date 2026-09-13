@@ -108,6 +108,7 @@ export type GameStateMachineHookResult = {
     password: string,
     isLogIn: boolean,
   ) => Promise<{ status: string } | void>;
+  handleConflict: (version_new: boolean) => Promise<{ status: string } | void>;
   handleCloseNewPassCase: () => void;
   handleForgotPassword: (
     identifier: string,
@@ -119,7 +120,6 @@ export type GameStateMachineHookResult = {
   handleOnContinue: () => void;
   handleOnStartNew: () => void;
   handlePlaceBet: (amount: number) => Promise<void>;
-  //handleDeal: () => Promise<void>; // Hozzáadva a visszatérési típushoz
   handleRetakeBet: () => void;
   handleStartGame: () => void;
   handleHitRequest: () => void;

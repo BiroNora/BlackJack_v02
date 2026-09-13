@@ -23,6 +23,7 @@ import {
   handleSplitHit,
   type HttpError,
   setAuth,
+  handleConflictAPI,
   handleForgotPasswordAPI,
   setForgotPasswordSubmit,
 } from "../api/api-calls";
@@ -199,24 +200,24 @@ export function useGameStateMachine(): GameStateMachineHookResult {
           setAuth(email, username, password, isLogIn),
         );
 
-        const resData = data as { status?: string, is_guest?: boolean };
+        const resData = data as { status?: string; is_guest?: boolean };
         if (resData && resData.status === "IC") {
           resultStatus = resData.status;
           return;
         }
 
         if (resData && resData.status === "CONFLICT") {
-            resultStatus = "CONFLICT";
-            // Itt nyithatod meg a modalt, pl.:
-            // openConflictModal({ email, username, password });
-            return;
-          }
+          resultStatus = "CONFLICT";
+          // Itt nyithatod meg a modalt, pl.:
+          // openConflictModal({ email, username, password });
+          return;
+        }
 
         const response = extractGameStateData(data);
         if (!response) return;
 
         if (resData && typeof resData.is_guest === "boolean") {
-          dispatch({ type: 'SET_IS_GUEST', payload: resData.is_guest });
+          dispatch({ type: "SET_IS_GUEST", payload: resData.is_guest });
         }
         transitionToState(response?.target_phase as GameState, response);
       });
@@ -232,10 +233,33 @@ export function useGameStateMachine(): GameStateMachineHookResult {
     transitionToState("BETTING" as GameState, { target_phase: "BETTING" });
   }, [transitionToState]);
 
+  const handleConflict = useCallback(
+    async (version_new: boolean): Promise<{ status: string } | void> => {
+      let resultStatus = "success";
+
+      await executeAsyncAction(async () => {
+        const data = await handleApiAction(() =>
+          handleConflictAPI(version_new),
+        );
+
+        const resData = data as { status?: string };
+        if (resData && resData.status === "IC") {
+          resultStatus = resData.status;
+          return;
+        }
+
+        const response = extractGameStateData(data);
+        if (!response) return;
+        transitionToState(response?.target_phase as GameState, response);
+      });
+
+      return { status: resultStatus };
+    },
+    [executeAsyncAction, handleApiAction, transitionToState],
+  );
+
   const handleForgotPassword = useCallback(
-    async (
-      identifier: string,
-    ): Promise<{ status: string } | void> => {
+    async (identifier: string): Promise<{ status: string } | void> => {
       if (!identifier || identifier.trim() === "") {
         toast("Missing email address", {
           id: "forgot-pass-error",
@@ -1186,6 +1210,7 @@ export function useGameStateMachine(): GameStateMachineHookResult {
     handleStartGame,
     handleSkipAuth,
     handleAuth,
+    handleConflict,
     handleCloseNewPassCase,
     handleForgotPassword,
     handleForgotPasswordSubmit,
