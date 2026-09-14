@@ -463,7 +463,10 @@ function App() {
               return (
                 <div>
                   <PageWrapper>
-                    <ConflictModal onResolve={handleConflict} />
+                    <ConflictModal
+                      onResolve={handleConflict}
+                      gameState={gameState}
+                    />
                   </PageWrapper>
                 </div>
               );

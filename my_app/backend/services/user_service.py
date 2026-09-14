@@ -39,14 +39,12 @@ class UserService:
                 session_user = self.db.query(User).get(current_user_id)
 
                 if session_user and session_user.is_guest:
-                    # Megnézzük, hogy mindkét helyen van-e létező játékállapot
                     db_raw = target_user.current_game_state
                     session_raw = session_user.current_game_state
 
                     has_db_game = db_raw is not None and db_raw != {}
                     has_session_game = session_raw is not None and session_raw != {}
 
-                    # Ha mindkettőben van aktív játék, akkor CONFLICT van!
                     if has_db_game and has_session_game:
                         raise ValueError("CONFLICT")
 
@@ -151,7 +149,7 @@ class UserService:
         self.db.commit()
         return deleted_count
 
-    def handle_version(self, current_user_id, target_user_id, version_new):
+    def handle_conflict(self, current_user_id, target_user_id, version_new):
         """
         Kezeli a konfliktust a sessionben tárolt azonosítók alapján.
         :param version_new: True -> Az új (vendég session) játéka nyer, felülírja a célszámlát.

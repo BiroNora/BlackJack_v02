@@ -1,15 +1,21 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import type { GameStateData } from "../types/game-types";
 
 interface ConflictModalProps {
   onResolve: (versionNew: boolean) => Promise<{ status: string } | void>;
+  gameState?: Partial<GameStateData>;
 }
 
 export const ConflictModal: React.FC<ConflictModalProps> = ({
   onResolve,
+  gameState,
 }) => {
   const [loading, setLoading] = useState(false);
+  const conflictData = (gameState as any)?.conflict_data;
+  const existingBalance = conflictData?.existing_user?.balance ?? 0;
+  const sessionBalance = conflictData?.current_session?.balance ?? 0;
 
   const handleChoice = async (versionNew: boolean) => {
     setLoading(true);
@@ -53,8 +59,10 @@ export const ConflictModal: React.FC<ConflictModalProps> = ({
         exit={{ y: -50, opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
       >
-        <h2>"A saved game already exists. Overwrite?"</h2>
-        <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+        <h3>A saved game already exists. Overwrite?</h3>
+        <div>Saved Account Balance: {existingBalance}</div>
+        <div>Current Session Balance: {sessionBalance}</div>
+        <div className="button-container1" style={{ marginTop: "2rem"}}>
           <button
             type="button"
             disabled={loading}

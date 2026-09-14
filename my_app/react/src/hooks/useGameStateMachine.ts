@@ -208,8 +208,11 @@ export function useGameStateMachine(): GameStateMachineHookResult {
 
         if (resData && resData.status === "CONFLICT") {
           resultStatus = "CONFLICT";
-          // Itt nyithatod meg a modalt, pl.:
-          // openConflictModal({ email, username, password });
+
+          const response = extractGameStateData(data);
+          if (response) {
+            transitionToState(response?.target_phase as GameState, response);
+          }
           return;
         }
 
@@ -219,7 +222,7 @@ export function useGameStateMachine(): GameStateMachineHookResult {
         if (resData && typeof resData.is_guest === "boolean") {
           dispatch({ type: "SET_IS_GUEST", payload: resData.is_guest });
         }
-        
+
         transitionToState(response?.target_phase as GameState, response);
       });
 
@@ -243,12 +246,15 @@ export function useGameStateMachine(): GameStateMachineHookResult {
           handleConflictAPI(version_new),
         );
 
-        const resData = data as { status?: string };
+        const resData = data as { status?: string; is_guest?: boolean };
         if (resData && resData.status === "IC") {
           resultStatus = resData.status;
           return;
         }
 
+        if (resData && typeof resData.is_guest === "boolean") {
+          dispatch({ type: "SET_IS_GUEST", payload: resData.is_guest });
+        }
         const response = extractGameStateData(data);
         if (!response) return;
         transitionToState(response?.target_phase as GameState, response);

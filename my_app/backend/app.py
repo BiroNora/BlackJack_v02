@@ -405,18 +405,54 @@ def handle_auth(user_service):
                 .filter(or_(User.email == email, User.user_name == username))
                 .first()
             )
+
+            guest_user = (
+                user_service.db.query(User).get(current_user_id)
+                if current_user_id
+                else None
+            )
+            target_tokens = target_user.tokens if target_user else 0
+            guest_tokens = guest_user.tokens if guest_user else 0
+
             if target_user:
                 session["pending_target_user_id"] = target_user.id
-        print("409 error_code: ", error_code)
-        return (
-            jsonify(
-                {
-                    "status": error_code,
-                }
-            ),
-            200,
-        )
 
+            serialized_game = None
+            if guest_user and guest_user.current_game_state:
+                raw_game = guest_user.current_game_state
+                game = (
+                    Game.deserialize(raw_game)
+                    if isinstance(raw_game, (dict, str))
+                    else raw_game
+                )
+
+                # Fázisok beállítása a konfliktushoz és a későbbi visszatéréshez
+                game.target_phase = PhaseState.CONFLICT
+
+                guest_user.current_game_state = game.serialize()
+                user_service.db.commit()
+
+                serialized_game = GameSerializer.serialize_by_context(game, request.path)
+
+            return (
+                jsonify(
+                    {
+                        "status": error_code,
+                        "game_state": serialized_game,
+                        "conflict_data": {
+                            "existing_user": {
+                                "balance": target_tokens,
+                            },
+                            "current_session": {
+                                "balance": guest_tokens,
+                            },
+                        },
+                    }
+                ),
+                200,
+            )
+
+        return jsonify({"status": error_code}), 200
 
     session["user_id"] = user.id
 
@@ -439,7 +475,7 @@ def handle_auth(user_service):
                 "status": "success",
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "current_tokens": user.tokens,
-                "is_guest": user.is_guest,
+                "is_guest": guest_user.is_guest if guest_user else True,
             }
         ),
         200,
@@ -1091,6 +1127,7 @@ def handle_conflict(user_service):
                 "status": "success",
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
             }
         ),
         200,

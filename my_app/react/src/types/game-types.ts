@@ -45,6 +45,17 @@ export interface ApiResponse {
   is_guest: boolean;
   game_state: GameStateData; // Csak a játék adatai
   game_state_hint: string;
+  conflict_data?: ConflictDetails;
+}
+
+export interface ConflictDetails {
+  existing_user: {
+    balance: number;
+    updated_at?: string;
+  };
+  current_session: {
+    balance: number;
+  };
 }
 
 export interface PlayerData {
