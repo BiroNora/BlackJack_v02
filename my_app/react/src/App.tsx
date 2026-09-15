@@ -26,6 +26,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { ForgotPasswordModal } from "./components/ForgotPasswordModal";
 import { AuthModal } from "./components/AuthModal";
 import { ConflictModal } from "./components/ConflictModal";
+import { defaultToastOptions } from "./utilities/toast-config";
 
 function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -110,15 +111,7 @@ function App() {
         containerStyle={{
           top: "40%",
         }}
-        toastOptions={{
-          duration: 2000,
-          style: {
-            borderRadius: "10px",
-            padding: "0.5rem",
-            fontStyle: "italic",
-            minWidth: "250px",
-          },
-        }}
+        toastOptions={defaultToastOptions}
       />
       <AnimatePresence mode="wait">
         {(() => {
@@ -465,7 +458,7 @@ function App() {
                   <PageWrapper>
                     <ConflictModal
                       onResolve={handleConflict}
-                      gameState={gameState}
+                      conflictData={gameState.conflict_data}
                     />
                   </PageWrapper>
                 </div>

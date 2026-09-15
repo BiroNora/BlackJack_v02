@@ -392,6 +392,12 @@ def handle_auth(user_service):
 
     current_user_id = session.get("user_id")
 
+    guest_user = (
+        user_service.db.query(User).get(current_user_id)
+        if current_user_id
+        else None
+    )
+
     try:
         user = user_service.handle_user_auth(
             email, username, password, is_login, current_user_id
@@ -406,15 +412,10 @@ def handle_auth(user_service):
                 .first()
             )
 
-            guest_user = (
-                user_service.db.query(User).get(current_user_id)
-                if current_user_id
-                else None
-            )
             target_tokens = target_user.tokens if target_user else 0
             guest_tokens = guest_user.tokens if guest_user else 0
 
-            if target_user:
+            if target_user: # régi adat
                 session["pending_target_user_id"] = target_user.id
 
             serialized_game = None
@@ -467,7 +468,10 @@ def handle_auth(user_service):
         # Biztonsági fallback, ha valamiért üres lenne
         game = Game()
         user.current_game_state = game.serialize()
-        db.session.commit()
+
+    game.target_phase = PhaseState.BETTING
+    user.current_game_state = game.serialize()
+    user_service.db.commit()
 
     return (
         jsonify(
@@ -1094,7 +1098,7 @@ def handle_conflict(user_service):
     version_new = data.get("version_new")
 
     current_user_id = session.get("user_id")
-    target_user_id = session.pop("pending_target_user_id", None)
+    target_user_id = session.pop("pending_target_user_id", None) # régi adat
 
     if not target_user_id:
         return jsonify({"status": "EXPIRED"}), 200

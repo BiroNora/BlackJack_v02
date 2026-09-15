@@ -1,19 +1,18 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import type { GameStateData } from "../types/game-types";
+import type { ConflictDetails } from "../types/game-types";
 
 interface ConflictModalProps {
   onResolve: (versionNew: boolean) => Promise<{ status: string } | void>;
-  gameState?: Partial<GameStateData>;
+  conflictData?: ConflictDetails;
 }
 
 export const ConflictModal: React.FC<ConflictModalProps> = ({
   onResolve,
-  gameState,
+  conflictData,
 }) => {
   const [loading, setLoading] = useState(false);
-  const conflictData = (gameState as any)?.conflict_data;
   const existingBalance = conflictData?.existing_user?.balance ?? 0;
   const sessionBalance = conflictData?.current_session?.balance ?? 0;
 

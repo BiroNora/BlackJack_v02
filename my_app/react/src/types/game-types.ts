@@ -36,6 +36,7 @@ export interface GameStateData {
   bet_list: number[];
   target_phase: GameState | null;
   pre_phase: GameState | null;
+  conflict_data?: ConflictDetails;
 }
 
 export interface ApiResponse {

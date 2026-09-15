@@ -155,7 +155,10 @@ class UserService:
         :param version_new: True -> Az új (vendég session) játéka nyer, felülírja a célszámlát.
                             False -> A régi (célszámla) játéka marad, a vendég törlődik.
         """
+        # régi mentett
         target_user = self.db.query(User).get(target_user_id)
+
+        # jelenlegi
         session_user = (
             self.db.query(User).get(current_user_id) if current_user_id else None
         )
@@ -165,18 +168,17 @@ class UserService:
 
         if session_user and session_user.is_guest:
             if version_new:
-                # Ha version_new True: a régi (célszámlán lévő) állapot marad,
-                # a vendég session fiókot pedig töröljük.
-                self.db.delete(session_user)
-            else:
-                # Ha version_new False: az új (vendég sessionben lévő) állapot nyer,
-                # felülírjuk vele a célszámla játékállapotát és tokenjeit.
+                # 1. eset: Az új (vendég sessionben lévő) állapot nyer
                 if session_user.current_game_state:
                     target_user.current_game_state = session_user.current_game_state
                     if hasattr(session_user, "tokens"):
                         target_user.tokens = session_user.tokens
                     flag_modified(target_user, "current_game_state")
-                self.db.delete(session_user)
+            else:
+                pass
+
+        # Bármelyiket is választotta, a felesleges ideiglenes vendég fiókot mindkét esetben töröljük!
+        self.db.delete(session_user)
 
         target_user.is_guest = False
         self.db.commit()
