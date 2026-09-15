@@ -39,7 +39,7 @@ const Loading: React.FC<LoadingProps> = ({
     <>
       {!isAuthOpen && (
         <div className="loading-container-centered">
-          <h1>
+          <h1 className="animated-dots-heading">
             L O A D I N G<span className="dot dot-1">.</span>
             <span className="dot dot-2">.</span>
             <span className="dot dot-3">.</span>
@@ -60,7 +60,7 @@ const Loading: React.FC<LoadingProps> = ({
             >
               Log in to save your scores
             </button>
-            
+
             <button
               className="submit-btn"
               onClick={(e) => {
