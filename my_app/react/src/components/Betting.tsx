@@ -139,7 +139,9 @@ const Betting: React.FC<BettingProps> = ({
                 whiteSpace: "nowrap",
                 display: "inline-block", // Biztosítja, hogy legyen kiterjedése
               }}
-            > {"\u00A0"}
+            >
+              {" "}
+              {"\u00A0"}
               {formatNumber(tokens)}
             </motion.span>
           </AnimatePresence>
@@ -150,24 +152,6 @@ const Betting: React.FC<BettingProps> = ({
         id="chips"
         className={`button-container ${showButtons ? "show-buttons" : ""}`}
       >
-        <motion.button
-          id="all-in"
-          type="button"
-          onClick={handleAllIn}
-          variants={variants}
-          disabled={tokens === 0 || isWFSR}
-          animate={
-            tokens === 0
-              ? "disabledByUser"
-              : isWFSR
-              ? "disabledByServer"
-              : "enabled"
-          }
-          transition={isWFSR ? { duration: 0.3 } : undefined}
-        >
-          All In
-        </motion.button>
-
         {betAmounts.map((amount) => (
           <motion.button
             key={amount}
@@ -181,14 +165,32 @@ const Betting: React.FC<BettingProps> = ({
               tokens < amount
                 ? "disabledByUser"
                 : isWFSR
-                ? "disabledByServer"
-                : "enabled"
+                  ? "disabledByServer"
+                  : "enabled"
             }
             transition={isWFSR ? { duration: 0.3 } : undefined}
           >
             {formatNumber(amount)}
           </motion.button>
         ))}
+
+        <motion.button
+          id="all-in"
+          type="button"
+          onClick={handleAllIn}
+          variants={variants}
+          disabled={tokens === 0 || isWFSR}
+          animate={
+            tokens === 0
+              ? "disabledByUser"
+              : isWFSR
+                ? "disabledByServer"
+                : "enabled"
+          }
+          transition={isWFSR ? { duration: 0.3 } : undefined}
+        >
+          All In
+        </motion.button>
       </div>
     </div>
   );
