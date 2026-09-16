@@ -27,9 +27,11 @@ import { ForgotPasswordModal } from "./components/ForgotPasswordModal";
 import { AuthModal } from "./components/AuthModal";
 import { ConflictModal } from "./components/ConflictModal";
 import { defaultToastOptions } from "./utilities/toast-config";
+import { ProfileModal } from "./components/ProfileModal";
 
 function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const {
     gameState,
     handleAuth,
@@ -106,6 +108,14 @@ function App() {
           />
         )}
       </AnimatePresence>
+      <AnimatePresence>
+        {isProfileOpen && (
+          <ProfileModal
+            onClose={() => setIsProfileOpen(false)}
+            username={gameState.username || ""}
+          />
+        )}
+      </AnimatePresence>
       <Toaster
         position="top-center"
         containerStyle={{
@@ -153,11 +163,7 @@ function App() {
             case "INIT_GAME":
               return (
                 <div>
-                  <Cards
-                    gameState={gameState}
-                    initDeckLen={initDeckLen}
-                    onOpenAuth={() => setIsAuthOpen(true)}
-                  />
+                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
                 </div>
               );
             case "BETTING":
@@ -168,6 +174,7 @@ function App() {
                     initDeckLen={initDeckLen}
                     isGuest={isGuest}
                     onOpenAuth={() => setIsAuthOpen(true)}
+                    onOpenProfile={() => setIsProfileOpen(true)}
                   />
                   <Betting
                     gameState={gameState}
@@ -181,11 +188,7 @@ function App() {
             case "MAIN_TURN":
               return (
                 <div>
-                  <Cards
-                    gameState={gameState}
-                    initDeckLen={initDeckLen}
-                    onOpenAuth={() => setIsAuthOpen(true)}
-                  />
+                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
                   <div className="player-dealer-area-wrapper">
                     <PlayerDealerMasked
                       gameState={gameState}
@@ -215,11 +218,7 @@ function App() {
             case "MAIN_STAND":
               return (
                 <div>
-                  <Cards
-                    gameState={gameState}
-                    initDeckLen={initDeckLen}
-                    onOpenAuth={() => setIsAuthOpen(true)}
-                  />
+                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
                   <div className="player-dealer-area-wrapper">
                     <PlayerDealer gameState={gameState} />
                   </div>
@@ -237,11 +236,7 @@ function App() {
             case "MAIN_STAND_REWARDS_TRANSIT":
               return (
                 <div>
-                  <Cards
-                    gameState={gameState}
-                    initDeckLen={initDeckLen}
-                    onOpenAuth={() => setIsAuthOpen(true)}
-                  />
+                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
                   <div className="player-dealer-area-wrapper">
                     <PlayerDealerMasked
                       gameState={gameState}
@@ -262,11 +257,7 @@ function App() {
             case "SPLIT_TURN":
               return (
                 <div>
-                  <Cards
-                    gameState={gameState}
-                    initDeckLen={initDeckLen}
-                    onOpenAuth={() => setIsAuthOpen(true)}
-                  />
+                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
                   <div className="player-dealer-area-wrapper">
                     <SplitPlayerDealerMasked gameState={gameState} />
                   </div>
@@ -294,11 +285,7 @@ function App() {
             case "SPLIT_STAND":
               return (
                 <div>
-                  <Cards
-                    gameState={gameState}
-                    initDeckLen={initDeckLen}
-                    onOpenAuth={() => setIsAuthOpen(true)}
-                  />
+                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
                   <div className="player-dealer-area-wrapper">
                     <SplitPlayerDealerMasked gameState={gameState} />
                   </div>
@@ -319,11 +306,7 @@ function App() {
             case "SPLIT_STAND_DOUBLE":
               return (
                 <div>
-                  <Cards
-                    gameState={gameState}
-                    initDeckLen={initDeckLen}
-                    onOpenAuth={() => setIsAuthOpen(true)}
-                  />
+                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
                   <div className="player-dealer-area-wrapper">
                     <SplitPlayerDealerMasked gameState={gameState} />
                   </div>
@@ -344,11 +327,7 @@ function App() {
             case "SPLIT_NAT21_TRANSIT":
               return (
                 <div>
-                  <Cards
-                    gameState={gameState}
-                    initDeckLen={initDeckLen}
-                    onOpenAuth={() => setIsAuthOpen(true)}
-                  />
+                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
                   <div className="player-dealer-area-wrapper">
                     <SplitPlayerDealerMasked gameState={gameState} />
                   </div>
@@ -369,11 +348,7 @@ function App() {
             case "SPLIT_FINISH":
               return (
                 <div>
-                  <Cards
-                    gameState={gameState}
-                    initDeckLen={initDeckLen}
-                    onOpenAuth={() => setIsAuthOpen(true)}
-                  />
+                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
                   <div className="player-dealer-area-wrapper">
                     <PlayerDealer gameState={gameState} />
                   </div>
@@ -394,11 +369,7 @@ function App() {
             case "SPLIT_FINISH_OUTCOME":
               return (
                 <div>
-                  <Cards
-                    gameState={gameState}
-                    initDeckLen={initDeckLen}
-                    onOpenAuth={() => setIsAuthOpen(true)}
-                  />
+                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
                   <div className="player-dealer-area-wrapper">
                     <PlayerDealer gameState={gameState} />
                   </div>
@@ -419,11 +390,7 @@ function App() {
             case "SPLIT_ACE_TRANSIT":
               return (
                 <div>
-                  <Cards
-                    gameState={gameState}
-                    initDeckLen={initDeckLen}
-                    onOpenAuth={() => setIsAuthOpen(true)}
-                  />
+                  <Cards gameState={gameState} initDeckLen={initDeckLen} />
                   <div className="player-dealer-area-wrapper">
                     <SplitPlayerDealerMasked gameState={gameState} />
                   </div>

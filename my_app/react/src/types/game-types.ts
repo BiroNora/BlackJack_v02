@@ -37,6 +37,7 @@ export interface GameStateData {
   target_phase: GameState | null;
   pre_phase: GameState | null;
   conflict_data?: ConflictDetails;
+  username?: string;
 }
 
 export interface ApiResponse {

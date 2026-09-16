@@ -6,7 +6,7 @@ interface CardsProps {
   gameState: GameStateData;
   initDeckLen: number | null;
   isGuest?: boolean;
-  onOpenAuth: () => void;
+  onOpenAuth?: () => void;
   onOpenProfile?: () => void;
 }
 
@@ -58,7 +58,7 @@ const Cards: React.FC<CardsProps> = ({
               className="login-link"
               onClick={(e) => {
                 e.preventDefault();
-                onOpenAuth();
+                onOpenAuth?.();
               }}
             >
               Log in / Sign up
@@ -69,7 +69,7 @@ const Cards: React.FC<CardsProps> = ({
               className="login-link"
               onClick={(e) => {
                 e.preventDefault();
-                if (onOpenProfile) onOpenProfile();
+                onOpenProfile?.();
               }}
             >
               Go to your profile

@@ -1,8 +1,11 @@
 import type { ConflictDetails, GameStateData } from "../types/game-types";
 
-export function extractGameStateData(
-  apiResponse: unknown,
-): (Partial<GameStateData> & { conflict_data?: ConflictDetails }) | undefined {
+export function extractGameStateData(apiResponse: unknown):
+  | (Partial<GameStateData> & {
+      conflict_data?: ConflictDetails;
+      username?: string;
+    })
+  | undefined {
   if (
     typeof apiResponse !== "object" ||
     apiResponse === null ||
@@ -17,6 +20,7 @@ export function extractGameStateData(
     current_tokens?: number;
     game_state: Partial<GameStateData>;
     conflict_data?: ConflictDetails;
+    username?: string;
   };
 
   const rawGameState = res.game_state as Partial<GameStateData>;
@@ -24,11 +28,13 @@ export function extractGameStateData(
   try {
     const processedData: Partial<GameStateData> & {
       conflict_data?: ConflictDetails;
+      username?: string;
     } = {
       ...rawGameState,
       ...(typeof res.current_tokens === "number"
         ? { tokens: res.current_tokens }
         : {}),
+      ...(typeof res.username === "string" ? { username: res.username } : {}),
       ...(res.conflict_data ? { conflict_data: res.conflict_data } : {}),
     };
     return processedData;

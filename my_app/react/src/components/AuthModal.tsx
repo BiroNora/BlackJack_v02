@@ -69,7 +69,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     const usernameArg = isLogin ? email : username;
 
     try {
-      const result = await onAuthSubmit(emailArg, usernameArg, password, isLogin);
+      const result = await onAuthSubmit(
+        emailArg,
+        usernameArg,
+        password,
+        isLogin,
+      );
 
       if (result?.status === "IC") {
         throw new Error("IC");
@@ -125,7 +130,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="pd-top">
           <h2>{isLogin ? "Log In" : "Register"}</h2>
         </div>
-
 
         <form onSubmit={handleSubmit}>
           <div className="form-group form-height">
@@ -186,9 +190,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 onChange={(e) => setUsername(e.target.value)}
                 autoComplete="username"
                 minLength={3}
-                maxLength={30}
-                pattern="^[a-zA-Z0-9_]{3,30}$"
-                title="3-30 characters. Letters, numbers, and underscores only."
+                maxLength={25}
+                pattern="^[a-zA-Z0-9_]{3,25}$"
+                title="3-25 characters. Letters, numbers, and underscores only."
                 required
               />
               <small id="username-hint" className="helper-text">

@@ -200,7 +200,11 @@ export function useGameStateMachine(): GameStateMachineHookResult {
           setAuth(email, username, password, isLogIn),
         );
 
-        const resData = data as { status?: string; is_guest?: boolean };
+        const resData = data as {
+          status?: string;
+          is_guest?: boolean;
+          username?: string;
+        };
         if (resData && resData.status === "IC") {
           resultStatus = resData.status;
           return;
@@ -221,6 +225,9 @@ export function useGameStateMachine(): GameStateMachineHookResult {
 
         if (resData && typeof resData.is_guest === "boolean") {
           dispatch({ type: "SET_IS_GUEST", payload: resData.is_guest });
+        }
+        if (response.username) {
+          dispatch({ type: "SET_USERNAME", payload: response.username });
         }
 
         transitionToState(response?.target_phase as GameState, response);
@@ -371,6 +378,10 @@ export function useGameStateMachine(): GameStateMachineHookResult {
         const response = extractGameStateData(data);
         if (!response) return;
 
+        if (response.username) {
+          dispatch({ type: "SET_USERNAME", payload: response.username });
+        }
+
         transitionToState(response?.target_phase as GameState, response);
       });
     },
@@ -392,6 +403,10 @@ export function useGameStateMachine(): GameStateMachineHookResult {
 
       const response = extractGameStateData(data);
       if (!response) return;
+
+      if (response.username) {
+        dispatch({ type: "SET_USERNAME", payload: response.username });
+      }
 
       transitionToState(response?.target_phase as GameState, response);
     });
@@ -587,9 +602,15 @@ export function useGameStateMachine(): GameStateMachineHookResult {
         )) as ApiResponse;
         const response = extractGameStateData(sessionData);
 
-        const resData = sessionData as { is_guest?: boolean };
+        const resData = sessionData as {
+          is_guest?: boolean;
+          username?: string;
+        };
         if (resData && typeof resData.is_guest === "boolean") {
           dispatch({ type: "SET_IS_GUEST", payload: resData.is_guest });
+        }
+        if (resData.username) {
+          dispatch({ type: "SET_USERNAME", payload: resData.username });
         }
 
         if (

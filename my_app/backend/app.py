@@ -373,6 +373,7 @@ def check_session(user_service):
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "current_tokens": user.tokens,
                 "is_guest": user.is_guest,
+                "username": user.user_name,
             }
         ),
         200,
@@ -393,9 +394,7 @@ def handle_auth(user_service):
     current_user_id = session.get("user_id")
 
     guest_user = (
-        user_service.db.query(User).get(current_user_id)
-        if current_user_id
-        else None
+        user_service.db.query(User).get(current_user_id) if current_user_id else None
     )
 
     try:
@@ -415,7 +414,7 @@ def handle_auth(user_service):
             target_tokens = target_user.tokens if target_user else 0
             guest_tokens = guest_user.tokens if guest_user else 0
 
-            if target_user: # régi adat
+            if target_user:  # régi adat
                 session["pending_target_user_id"] = target_user.id
 
             serialized_game = None
@@ -433,7 +432,9 @@ def handle_auth(user_service):
                 guest_user.current_game_state = game.serialize()
                 user_service.db.commit()
 
-                serialized_game = GameSerializer.serialize_by_context(game, request.path)
+                serialized_game = GameSerializer.serialize_by_context(
+                    game, request.path
+                )
 
             return (
                 jsonify(
@@ -480,6 +481,7 @@ def handle_auth(user_service):
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "current_tokens": user.tokens,
                 "is_guest": guest_user.is_guest if guest_user else True,
+                "username": user.user_name,
             }
         ),
         200,
@@ -511,6 +513,7 @@ def bet(user, game):
                 "status": "success",
                 "current_tokens": user.tokens,
                 "is_guest": user.is_guest,
+                "username": user.user_name,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "BET_SUCCESSFULLY_PLACED",
             }
@@ -540,6 +543,7 @@ def retake_bet(user, game):
                 "status": "success",
                 "current_tokens": user.tokens,
                 "is_guest": user.is_guest,
+                "username": user.user_name,
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "game_state_hint": "BET_SUCCESSFULLY_RETAKEN",
             }
@@ -1098,7 +1102,7 @@ def handle_conflict(user_service):
     version_new = data.get("version_new")
 
     current_user_id = session.get("user_id")
-    target_user_id = session.pop("pending_target_user_id", None) # régi adat
+    target_user_id = session.pop("pending_target_user_id", None)  # régi adat
 
     if not target_user_id:
         return jsonify({"status": "EXPIRED"}), 200

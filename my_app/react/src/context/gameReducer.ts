@@ -9,6 +9,7 @@ export interface GameDataState {
   initDeckLen: number | null; // Animációhoz
   totalInitialCards: number | null;
   isGuest: boolean;
+  username?: string;
 }
 
 // Definiáljuk az akciókat, ha még nincsenek a types-ban
@@ -21,6 +22,7 @@ export type GameAction =
   | { type: 'SET_INS_PLACED'; payload: boolean }
   | { type: 'SET_SHOW_INS_LOST'; payload: boolean }
   | { type: 'SET_IS_GUEST'; payload: boolean }
+  | { type: 'SET_USERNAME'; payload: string }
   | { type: 'RESET_TURN_VARIABLES' };
 
 export const initialGameDataState: GameDataState = {
@@ -47,6 +49,7 @@ export const initialGameDataState: GameDataState = {
   initDeckLen: null,
   totalInitialCards: null,
   isGuest: true,
+  username: "",
 };
 
 export function gameReducer(state: GameDataState, action: GameAction): GameDataState {
@@ -85,6 +88,8 @@ export function gameReducer(state: GameDataState, action: GameAction): GameDataS
       return { ...state, showInsLost: action.payload };
     case 'SET_IS_GUEST':
       return { ...state, isGuest: action.payload };
+    case 'SET_USERNAME':
+      return { ...state, username: action.payload };
     case 'RESET_TURN_VARIABLES':
       return {
         ...state,
