@@ -10,10 +10,10 @@ try:
     from my_app.backend.models import User
 except ImportError as e:
     # Ez a hiba akkor jön elő, ha az app, db, vagy User hiányzik az app.py-ból.
-    print(f"Kritikus hiba az importálás során: {e}")
-    print(
-        "Ellenőrizd, hogy a my_app.backend.app tartalmazza-e az 'app', 'db' és 'User' objektumok definícióját."
-    )
+    # print(f"Kritikus hiba az importálás során: {e}")
+    # print(
+    #     "Ellenőrizd, hogy a my_app.backend.app tartalmazza-e az 'app', 'db' és 'User' objektumok definícióját."
+    # )
     sys.exit(1)
 
 if __name__ == "__main__":
@@ -23,16 +23,16 @@ if __name__ == "__main__":
 
         # Létrehozza az adatbázis tábláit (ha még nincsenek)
         db.create_all()
-        print("Adatbázis táblák ellenőrizve/létrehozva (fejlesztési mód).")
+        # print("Adatbázis táblák ellenőrizve/létrehozva (fejlesztési mód).")
 
         # Tesztfelhasználó létrehozása (ha még nincs a DB-ben)
         if not User.query.first():
             test_user = User()
             db.session.add(test_user)
             db.session.commit()
-            print(
-                f"Létrehozva egy inicializált felhasználó ezzel az azonosítóval: {test_user.id}"
-            )
+            # print(
+            #   f"Létrehozva egy inicializált felhasználó ezzel az azonosítóval: {test_user.id}"
+            # )
 
     # 3.2. A Flask alkalmazás futtatása
     app.run(debug=True, port=5000)

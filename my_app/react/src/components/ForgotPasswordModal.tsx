@@ -44,7 +44,6 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordProps> = ({
 
     try {
       const token = sessionStorage.getItem("_rf_") || "";
-      console.log("token, :", token);
       const res = await onResetSubmit(token, password);
 
       if (res?.status === "IC") {

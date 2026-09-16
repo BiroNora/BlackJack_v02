@@ -105,7 +105,7 @@ class UserService:
         user_id = session.get("user_id") or request.cookies.get("user_id")
 
         if not user_id:
-            print("68 NO USER!!!!!")
+            # print("68 NO USER!!!!!")
             return None
 
         return self.db.query(User).filter_by(id=user_id).first()
@@ -119,8 +119,6 @@ class UserService:
             raise ValueError("IC")
 
         identifier = identifier.strip()
-
-        print("101 identi: ", identifier)
 
         if "@" in identifier:
             user = self.db.query(User).filter_by(email=identifier).first()

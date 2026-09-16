@@ -220,7 +220,7 @@ def api_error_handler(f):
 
         except Exception as e:
             db.session.rollback()
-            print(f"Váratlan szerver hiba az API végponton: {e}")
+            # print(f"Váratlan szerver hiba az API végponton: {e}")
             return (
                 jsonify(
                     {
@@ -365,7 +365,7 @@ def check_session(user_service):
 
     raw_game = getattr(user, "current_game_state")
     game = Game.deserialize(raw_game) if isinstance(raw_game, (dict, str)) else raw_game
-    print("386 raw_game: ", raw_game)
+
     return (
         jsonify(
             {
