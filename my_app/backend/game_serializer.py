@@ -57,7 +57,7 @@ class GameSerializer:
         if any(x in p for x in ["hit"]):
             return GameSerializer.serialize_initial_and_hit_state(game)
 
-        if any(x in p for x in ["bet", "retake_bet", "restart"]):
+        if any(x in p for x in ["bet", "retake_bet", "restart", "update_username"]):
             return GameSerializer.serialize_for_client_bets(game)
 
         return GameSerializer.serialize_for_client_init(game)

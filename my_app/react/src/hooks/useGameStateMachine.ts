@@ -23,6 +23,7 @@ import {
   handleSplitHit,
   type HttpError,
   setAuth,
+  updateUsername,
   handleConflictAPI,
   handleForgotPasswordAPI,
   setForgotPasswordSubmit,
@@ -233,6 +234,39 @@ export function useGameStateMachine(): GameStateMachineHookResult {
         transitionToState(response?.target_phase as GameState, response);
       });
 
+      return { status: resultStatus };
+    },
+    [executeAsyncAction, handleApiAction, transitionToState],
+  );
+
+  const handleUpdateUsername = useCallback(
+    async (username: string): Promise<{ status: string } | void> => {
+      if (!username || username.length < 3 || username.length > 25) {
+        throw new Error("Username incorrect long");
+      }
+      let resultStatus = "success";
+
+      await executeAsyncAction(async () => {
+        const data = await handleApiAction(() => updateUsername(username));
+
+        const resData = data as {
+          status?: string;
+          username?: string;
+        };
+        if (resData && resData.status === "IC") {
+          resultStatus = resData.status;
+          return;
+        }
+
+        const response = extractGameStateData(resData);
+        if (!response) return;
+
+        if (response.username) {
+          dispatch({ type: "SET_USERNAME", payload: response.username });
+        }
+
+        transitionToState(response?.target_phase as GameState, response);
+      });
       return { status: resultStatus };
     },
     [executeAsyncAction, handleApiAction, transitionToState],
@@ -633,57 +667,6 @@ export function useGameStateMachine(): GameStateMachineHookResult {
 
     checkExistingSession();
   }, [handleApiAction, transitionToState]);
-  /* // --- LOADING ---
-  useEffect(() => {
-    // 1. Kapuőr: Csak ha LOADING fázisban vagyunk és nem dolgozunk éppen
-    if (state.gameState.currentGameState !== "LOADING" || isProcessingRef.current) return;
-
-    // 2. Egyszeri futás védelme
-    if (isAppInitializedRef.current) return;
-    isAppInitializedRef.current = true;
-
-    isProcessingRef.current = true;
-    //console.log("--- INITIALIZING SESSION INDUL ---");
-
-    const initializeApplicationOnLoad = async () => {
-      try {
-        const minLoadingTimePromise = new Promise((resolve) => setTimeout(resolve, 6000));
-        const initializationPromise = handleApiAction(initializeSessionAPI);
-
-        const [initData] = await Promise.all([
-          initializationPromise,
-          minLoadingTimePromise,
-        ]);
-
-        if (!isMountedRef.current) return;
-
-        const { tokens, game_state, total_initial_cards } = initData as SessionInitResponse;
-        const nextPhase = game_state.target_phase as GameState;
-        dispatch({
-          type: 'SET_CONFIG',
-          payload: { totalInitialCards: total_initial_cards }
-        });
-
-        dispatch({
-          type: 'SET_DECK_LEN',
-          payload: game_state.deck_len
-        });
-
-        // Itt egyetlen hívással lerendezzük az adatot és a fázisváltást is a Reducerben
-        transitionToState(nextPhase, { tokens, ...game_state });
-
-        // Ezután a state.gameState.currentGameState megváltozik,
-        // és ez az effekt már nem fog újra belépni a legfelső IF miatt.
-
-      } catch (error) {
-        console.error("Initialization Error: ", error);
-        isProcessingRef.current = false;
-        if (isMountedRef.current) transitionToState("ERROR", { tokens: 0, deck_len: 0 });
-      }
-    };
-
-    initializeApplicationOnLoad();
-  }, [state.gameState.currentGameState, transitionToState, handleApiAction]); */
 
   // --- SHUFFLING ---
   useEffect(() => {
@@ -1243,6 +1226,7 @@ export function useGameStateMachine(): GameStateMachineHookResult {
     handleStartGame,
     handleSkipAuth,
     handleAuth,
+    handleUpdateUsername,
     handleConflict,
     handleCloseNewPassCase,
     handleForgotPassword,

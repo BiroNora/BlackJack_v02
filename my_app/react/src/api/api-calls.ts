@@ -47,6 +47,12 @@ export async function setAuth(
   });
 }
 
+export async function updateUsername(username: string) {
+  return await callApiEndpoint(`/api/update_username`, "POST", {
+    username: username,
+  });
+}
+
 export async function handleConflictAPI(version_new: boolean) {
   return await callApiEndpoint(`/api/handle_conflict`, "POST", {
     version_new: version_new,

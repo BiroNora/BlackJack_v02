@@ -121,6 +121,9 @@ export type GameStateMachineHookResult = {
     password: string,
     isLogIn: boolean,
   ) => Promise<{ status: string } | void>;
+  handleUpdateUsername: (
+    username: string,
+  ) => Promise<{ status: string } | void>;
   handleConflict: (version_new: boolean) => Promise<{ status: string } | void>;
   handleCloseNewPassCase: () => void;
   handleForgotPassword: (

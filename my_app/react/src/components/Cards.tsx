@@ -6,6 +6,7 @@ interface CardsProps {
   gameState: GameStateData;
   initDeckLen: number | null;
   isGuest?: boolean;
+  username?: string;
   onOpenAuth?: () => void;
   onOpenProfile?: () => void;
 }
@@ -14,6 +15,7 @@ const Cards: React.FC<CardsProps> = ({
   gameState,
   initDeckLen,
   isGuest,
+  username,
   onOpenAuth,
   onOpenProfile,
 }) => {
@@ -42,6 +44,9 @@ const Cards: React.FC<CardsProps> = ({
   }, [deck_len, initDeckLen, tmp]);
 
   const isBettingPhase = currentGameState === "BETTING" || !currentGameState;
+  const truncateUsername = (name: string, maxLen = 12) => {
+    return name.length > maxLen ? name.substring(0, maxLen) + "..." : name;
+  };
 
   return (
     <div className="cards merriweather" id="cards">
@@ -72,7 +77,7 @@ const Cards: React.FC<CardsProps> = ({
                 onOpenProfile?.();
               }}
             >
-              Go to your profile
+              {truncateUsername(username || "")}'s profile
             </a>
           ))}
       </div>

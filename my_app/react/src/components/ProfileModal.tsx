@@ -5,11 +5,13 @@ import toast from "react-hot-toast";
 interface ProfileModalProps {
   onClose: () => void;
   username: string;
+  handleSave: (username: string) => Promise<{ status: string } | void>;
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
   onClose,
   username,
+  handleSave: saveUsername,
 }) => {
   const [currentUsername, setCurrentUsername] = useState(username);
   const [isEditing, setIsEditing] = useState(false);
@@ -20,22 +22,37 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     setIsEditing(true);
   };
 
-  const handleSave = async (e: React.SubmitEvent) => {
+  const handleSaveClick = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
-    if (!tempUsername) {
+    if (!tempUsername || tempUsername.trim() === "") {
       toast("Username is missing", {
         id: "pass-error",
         duration: 2000,
       });
       return;
     }
-    setCurrentUsername(tempUsername);
-    setIsEditing(false);
-    // Itt küldheted majd el az API-nak is a módosítást!
+    try {
+      const result = await saveUsername(tempUsername);
+
+      if (result && result.status === "IC") {
+        toast("Invalid username format or already taken", {
+          id: "pass-error",
+          duration: 2000,
+        });
+        return;
+      }
+
+      setCurrentUsername(tempUsername);
+      setIsEditing(false);
+      toast.success("Username updated successfully!", { duration: 2000 });
+    } catch {
+      toast("Failed to update username", { duration: 2000 });
+    }
   };
 
   const handleCancel = () => {
+    setTempUsername(currentUsername);
     setIsEditing(false);
   };
 
@@ -84,15 +101,20 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   onClick={handleEditClick}
                   title="editing"
                   className="eye-toggle"
-                  style={{ color: "#000000", fontSize: "1.7rem" }}
+                  style={{
+                    color: "#000000",
+                    fontSize: "1.7rem",
+                    transform: "scaleX(-1)",
+                    display: "inline-block",
+                  }}
                 >
-                  🖉
+                  ✎
                 </button>
               </div>
             </>
           ) : (
             // --- SZERKESZTŐ NÉZET (Input mező + Mentés / Mégse) ---
-            <>
+            <form onSubmit={handleSaveClick}>
               <input
                 type="text"
                 value={tempUsername}
@@ -104,14 +126,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 autoFocus // Automatikusan fókuszba hozza az inputot, ha rákattintasz a ceruzára
               />
               <div className="button-container1" style={{ marginTop: "2rem" }}>
-                <button onClick={handleSave} style={{ minWidth: "6rem" }}>
+                <button type="submit" style={{ minWidth: "6rem" }}>
                   Save
                 </button>
                 <button onClick={handleCancel} style={{ minWidth: "6rem" }}>
                   Cancel
                 </button>
               </div>
-            </>
+            </form>
           )}
         </div>
       </motion.div>

@@ -1142,7 +1142,7 @@ def handle_conflict(user_service):
     )
 
 
-# dedicated cron
+# 23 dedicated cron
 @app.route("/api/cron/cleanup-guests", methods=["GET"])
 @with_user_service
 def cron_cleanup_guests(user_service):
@@ -1168,7 +1168,53 @@ def cron_cleanup_guests(user_service):
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
-# 20
+# 24
+@app.route("/api/update_username", methods=["POST"])
+@api_error_handler
+@with_user_service
+def update_username(user_service):
+    data = request.get_json()
+    new_username = data.get("username")
+    current_user_id = session.get("user_id")
+
+    if not current_user_id:
+        return jsonify({"status": "IC"}), 200
+
+    user = user_service.db.query(User).get(current_user_id)
+    if not user:
+        return jsonify({"status": "IC"}), 200
+
+    updated_user = user_service.update_username(user, new_username)
+    if not updated_user:
+        return jsonify({"status": "IC"}), 200
+
+    raw_game = getattr(user, "current_game_state", None)
+    if raw_game:
+        game = (
+            Game.deserialize(raw_game)
+            if isinstance(raw_game, (dict, str))
+            else raw_game
+        )
+    else:
+        game = Game()
+        user.current_game_state = game.serialize()
+        user_service.db.commit()
+
+    return (
+        jsonify(
+            {
+                "status": "success",
+                "game_state": GameSerializer.serialize_by_context(game, request.path),
+                "current_tokens": user.tokens,
+                "is_guest": user.is_guest,
+                "username": user.user_name,
+            }
+        ),
+        200,
+    )
+
+
+# 25
 @app.route("/error_page", methods=["GET"])
 def error_page():
     return render_template("error.html")

@@ -184,3 +184,20 @@ class UserService:
         self.db.commit()
 
         return target_user
+
+    def update_username(self, user, new_username):
+        if (
+            not new_username
+            or not re.match(r"^[a-zA-Z0-9_]{3,25}$", new_username)
+            or not user
+        ):
+            return None
+
+        existing = self.db.query(User).filter(User.user_name == new_username).first()
+        if existing and existing.id != user.id:
+            return None
+
+        user.user_name = new_username
+        self.db.commit()
+
+        return user

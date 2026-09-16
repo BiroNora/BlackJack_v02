@@ -35,6 +35,7 @@ function App() {
   const {
     gameState,
     handleAuth,
+    handleUpdateUsername,
     handleConflict,
     handleCloseNewPassCase,
     handleForgotPassword,
@@ -113,6 +114,7 @@ function App() {
           <ProfileModal
             onClose={() => setIsProfileOpen(false)}
             username={gameState.username || ""}
+            handleSave={handleUpdateUsername}
           />
         )}
       </AnimatePresence>
@@ -173,6 +175,7 @@ function App() {
                     gameState={gameState}
                     initDeckLen={initDeckLen}
                     isGuest={isGuest}
+                    username={gameState.username || ""}
                     onOpenAuth={() => setIsAuthOpen(true)}
                     onOpenProfile={() => setIsProfileOpen(true)}
                   />
