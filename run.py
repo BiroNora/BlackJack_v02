@@ -6,33 +6,27 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 try:
+    # Itt importáljuk be az alkalmazást, amit a Vercel keres
     from my_app.backend.app import app, db
     from my_app.backend.models import User
 except ImportError as e:
-    # Ez a hiba akkor jön elő, ha az app, db, vagy User hiányzik az app.py-ból.
-    # print(f"Kritikus hiba az importálás során: {e}")
-    # print(
-    #     "Ellenőrizd, hogy a my_app.backend.app tartalmazza-e az 'app', 'db' és 'User' objektumok definícióját."
-    # )
     sys.exit(1)
 
-if __name__ == "__main__":
-    # 3.1. Adatbázis inicializálás és Tesztfelhasználó létrehozás
-    # A db.create_all() és a lekérdezések csak app_context-ben futtathatók.
-    with app.app_context():
-
-        # Létrehozza az adatbázis tábláit (ha még nincsenek)
+# Opcionális: Ha a Vercel induláskor le akarja futtatni az adatbázis táblák létrehozását,
+# azt biztonságosan megteheti itt vagy a gyári app induláskor is.
+with app.app_context():
+    try:
         db.create_all()
-        # print("Adatbázis táblák ellenőrizve/létrehozva (fejlesztési mód).")
+    except Exception:
+        pass  # Ha read-only a fájlrendszer vagy épp migration fut, ne omoljon össze
 
-        # Tesztfelhasználó létrehozása (ha még nincs a DB-ben)
+if __name__ == "__main__":
+    # Ez csak akkor fut le, amikor lokálisan indítod a gépeden (pl. python run.py)
+    with app.app_context():
+        db.create_all()
         if not User.query.first():
             test_user = User()
             db.session.add(test_user)
             db.session.commit()
-            # print(
-            #   f"Létrehozva egy inicializált felhasználó ezzel az azonosítóval: {test_user.id}"
-            # )
 
-    # 3.2. A Flask alkalmazás futtatása
     app.run(debug=True, port=5000)
