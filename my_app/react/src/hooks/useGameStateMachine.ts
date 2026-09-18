@@ -206,7 +206,12 @@ export function useGameStateMachine(): GameStateMachineHookResult {
           is_guest?: boolean;
           username?: string;
         };
-        if (resData && resData.status === "IC") {
+        if (
+          resData &&
+          (resData.status === "IC" ||
+            resData.status === "UAE" ||
+            resData.status === "IU")
+        ) {
           resultStatus = resData.status;
           return;
         }
