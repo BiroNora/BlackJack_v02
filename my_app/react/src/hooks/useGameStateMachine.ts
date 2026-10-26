@@ -1,33 +1,35 @@
-import { useState, useEffect, useCallback, useRef, useReducer } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import {
-  initializeSessionAPI,
+  addPlayerFromPlayers,
+  addSplitPlayerToGame,
+  addToPlayersListByStand,
   checkSessionAPI,
-  setBet,
-  takeBackDeal,
   clearGameState,
-  recoverGameState,
+  forceRestart,
   getShuffling,
-  startGame,
+  handleConflictAPI,
+  handleDouble,
+  handleForgotPasswordAPI,
   handleHit,
   handleInsurance,
-  handleDouble,
-  handleStandAndRewards,
-  handleSplitHand,
-  addToPlayersListByStand,
-  addSplitPlayerToGame,
-  addPlayerFromPlayers,
   handleSplitDouble,
-  handleSplitStandAndRewards,
-  setRestart,
-  forceRestart,
+  handleSplitHand,
   handleSplitHit,
+  handleSplitStandAndRewards,
+  handleStandAndRewards,
   type HttpError,
+  initializeSessionAPI,
+  recoverGameState,
   setAuth,
-  updateUsername,
-  handleConflictAPI,
-  handleForgotPasswordAPI,
+  setBet,
   setForgotPasswordSubmit,
+  setRestart,
+  startGame,
+  takeBackDeal,
+  updateUsername,
 } from "../api/api-calls";
+import { gameReducer, initialGameDataState } from "../context/gameReducer";
 import type {
   ApiResponse,
   GameState,
@@ -36,8 +38,6 @@ import type {
   SessionInitResponse,
 } from "../types/game-types";
 import { extractGameStateData } from "../utilities/utils";
-import { gameReducer, initialGameDataState } from "../context/gameReducer";
-import toast from "react-hot-toast";
 
 // A hook visszatérési típusa most inline van deklarálva, nincs külön 'type' definíció.
 export function useGameStateMachine(): GameStateMachineHookResult {
