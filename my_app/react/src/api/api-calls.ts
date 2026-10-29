@@ -2,7 +2,6 @@ import type { ErrorResponse, SessionInitResponse } from "../types/game-types";
 import { v4 as uuidv4 } from "uuid";
 
 export async function initializeSessionAPI(
-  skipAuth: boolean = false,
 ): Promise<SessionInitResponse> {
   // 1. Megpróbáljuk lekérni a meglévő azonosítót (ha van)
   const clientUuid = localStorage.getItem("cid") || undefined;
@@ -14,7 +13,7 @@ export async function initializeSessionAPI(
     const data = await callApiEndpoint<SessionInitResponse>(
       "/api/initialize_session",
       "POST",
-      { client_id: clientUuid, skip_auth: skipAuth }, // Elküldjük, de a szerver dönt, hogy elfogadja-e
+      { client_id: clientUuid }, // Elküldjük, de a szerver dönt, hogy elfogadja-e
     );
 
     // 3. Ha a szerver új/másik ID-t adott vissza, elmentjük emlékeztetőnek
