@@ -50,7 +50,6 @@
 
 .bank2 {
   display: flex;
-  justify-content: space-around;
   align-items: center;
   gap: 0.5vw; /* A jelek közötti távolság is a szélességtől függ */
   width: 100%;
