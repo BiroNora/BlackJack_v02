@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import toast from "react-hot-toast";
 import { EyeClosed, EyeOpen } from "./EyeIcon";
@@ -25,6 +25,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    emailInputRef.current?.focus();
+  }, [isLogin]);
+
   const handleForgotPassword = async () => {
     if (!email || email.trim() === "") {
       toast("Missing email address", {
@@ -138,6 +144,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </label>
             <input
               id="email"
+              ref={emailInputRef}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"

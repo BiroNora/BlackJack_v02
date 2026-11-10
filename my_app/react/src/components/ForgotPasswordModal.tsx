@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EyeClosed, EyeOpen } from "./EyeIcon";
 import { motion } from "motion/react";
 import toast from "react-hot-toast";
@@ -20,6 +20,11 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordProps> = ({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    passwordInputRef.current?.focus();
+  }, []);
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -98,6 +103,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordProps> = ({
             <div className="password-input-wrapper">
               <input
                 id="password"
+                ref={passwordInputRef}
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
