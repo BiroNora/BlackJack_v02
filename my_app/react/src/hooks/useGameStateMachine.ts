@@ -1118,8 +1118,8 @@ export function useGameStateMachine(): GameStateMachineHookResult {
             if (response) {
               timeoutIdRef.current = window.setTimeout(() => {
                 if (isMountedRef.current) {
-                  resetGameVariables();
                   transitionToState("RESTART_GAME", response);
+                  resetGameVariables();
                 }
               }, 5000);
             }
@@ -1254,5 +1254,6 @@ export function useGameStateMachine(): GameStateMachineHookResult {
     preRewardBet: state.preRewardBet,
     preRewardTokens: state.preRewardTokens,
     showInsLost: state.showInsLost,
+    tokens: state.tokens,
   };
 }

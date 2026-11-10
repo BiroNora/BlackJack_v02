@@ -10,6 +10,7 @@ export interface GameDataState {
   totalInitialCards: number | null;
   isGuest: boolean;
   username?: string;
+  tokens: number,
 }
 
 // Definiáljuk az akciókat, ha még nincsenek a types-ban
@@ -50,6 +51,7 @@ export const initialGameDataState: GameDataState = {
   totalInitialCards: null,
   isGuest: true,
   username: "",
+  tokens: 0,
 };
 
 export function gameReducer(state: GameDataState, action: GameAction): GameDataState {
@@ -93,6 +95,7 @@ export function gameReducer(state: GameDataState, action: GameAction): GameDataS
     case 'RESET_TURN_VARIABLES':
       return {
         ...state,
+        tokens: state.gameState.tokens,
         initDeckLen: state.gameState.deck_len,
         preRewardBet: null,     // Nincs többé régi tét
         preRewardTokens: null,  // Nincs többé régi zsetonérték

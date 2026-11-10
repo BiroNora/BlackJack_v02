@@ -153,6 +153,7 @@ export type GameStateMachineHookResult = {
   initDeckLen: number | null;
   isWFSR: boolean;
   isGuest: boolean;
+  tokens: number;
 };
 
 export const states = [

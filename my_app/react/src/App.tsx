@@ -7,7 +7,6 @@ import { ForgotPasswordModal } from "./components/ForgotPasswordModal";
 import { OutOfTokens } from "./components/OutOfTokens";
 import { ProfileModal } from "./components/ProfileModal";
 import { Reloading } from "./components/Reloading";
-import { Restart } from "./components/RestartGame";
 import { Shuffling } from "./components/Shuffling";
 import { useGameStateMachine } from "./hooks/useGameStateMachine";
 import { useState } from "react";
@@ -19,6 +18,7 @@ import PlayButtons from "./components/PlayButtons";
 import PlayerDealer from "./components/PlayerDealer";
 import PlayerDealerMasked from "./components/PlayerDealerMasked";
 import RecoveryDec from "./components/RecoveryDec";
+import Restart from "./components/RestartGame";
 import SplitPlayButtons from "./components/SplitPlayButtons";
 import SplitPlayDisabledButtons from "./components/SplitPlayDisabledButtons";
 import SplitPlayDoubleDisabledButtons from "./components/SplitPlayDoubleDisabledButtons";
@@ -61,6 +61,7 @@ function App() {
     preRewardBet,
     preRewardTokens,
     showInsLost,
+    tokens,
   } = useGameStateMachine();
 
   function PageWrapper({ children }: React.PropsWithChildren<object>) {
@@ -445,7 +446,7 @@ function App() {
               return (
                 <div>
                   <PageWrapper>
-                    <Restart />
+                    <Restart currTokens={tokens}/>
                   </PageWrapper>
                 </div>
               );
