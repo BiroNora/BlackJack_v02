@@ -11,6 +11,7 @@ class PhaseState(str, Enum):
     OUT_OF_TOKENS = "OUT_OF_TOKENS"
     RECOVERY_DECISION = "RECOVERY_DECISION"
     CONFLICT = "CONFLICT"
+    FORGOT_PASSWORD = "FORGOT_PASSWORD"
 
     # Játék előkészítése
     SHUFFLING = "SHUFFLING"

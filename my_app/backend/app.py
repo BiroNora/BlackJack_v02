@@ -1055,7 +1055,7 @@ def forgot_password(user_service):
                 "current_tokens": INITIAL_TOKENS,
                 "is_guest": user.is_guest,
                 "game_state": {
-                    "target_phase": "FORGOT_PASSWORD",
+                    "target_phase": PhaseState.FORGOT_PASSWORD.value,
                     "deck_len": game.get_deck_len(),
                 },
                 "token": token,
@@ -1136,6 +1136,7 @@ def handle_conflict(user_service):
                 "game_state": GameSerializer.serialize_by_context(game, request.path),
                 "current_tokens": user.tokens,
                 "is_guest": user.is_guest,
+                "username": user.user_name,
             }
         ),
         200,
