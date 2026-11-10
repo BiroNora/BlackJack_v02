@@ -10,7 +10,7 @@ const Restart: React.FC<RestartProps> = ({currTokens}) => {
   return (
     <div className="loading-container-centered">
       <div>
-        <h1 className="animated-dots-heading">W E L C O M E B A C K</h1>
+        <h1 className="animated-dots-heading">W E L C O M E  B A C K</h1>
         <div className="bank3 merriweather">Your New Tokens: {currTokens}</div>
         <div>
           <div className="bank2 merriweather">
