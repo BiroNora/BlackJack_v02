@@ -47,3 +47,31 @@ export function extractGameStateData(apiResponse: unknown):
 export function formatNumber(number: number) {
   return number.toLocaleString("en-US");
 }
+
+export const MIN_PASSWORD_LENGTH = 8;
+const PASSWORD_REGEX_UPPER = /[A-Z]/;
+const PASSWORD_REGEX_LOWER = /[a-z]/;
+const PASSWORD_REGEX_NUM = /\d/;
+
+/**
+ * Ellenőrzi, hogy a jelszó megfelel-e a biztonsági elvárásoknak:
+ * - Legalább 8 karakter hosszú
+ * - Tartalmaz kis- és nagybetűt, valamint számot
+ */
+export function validatePasswordStrength(password: string): boolean {
+  if (!password || password.length < MIN_PASSWORD_LENGTH) {
+    return false;
+  }
+
+  if (!PASSWORD_REGEX_UPPER.test(password)) {
+    return false;
+  }
+  if (!PASSWORD_REGEX_LOWER.test(password)) {
+    return false;
+  }
+  if (!PASSWORD_REGEX_NUM.test(password)) {
+    return false;
+  }
+
+  return true;
+}
