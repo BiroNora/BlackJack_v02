@@ -7,12 +7,8 @@ from typing import Any, Dict
 
 from my_app.backend.hand_state import HandState
 from my_app.backend.phase_state import PhaseState
+from my_app.backend.utils import BJ_IMMEDIATE_STOP, TOTAL_INITIAL_CARDS
 from my_app.backend.winner_state import WinnerState
-
-NUM_DECKS = 2
-CARDS_IN_DECK = 52
-TOTAL_INITIAL_CARDS = NUM_DECKS * CARDS_IN_DECK
-BJ_IMMEDIATE_STOP = {WinnerState.BLACKJACK_PLAYER_WON, WinnerState.BLACKJACK_PUSH}
 
 class Game:
     NONE = 0

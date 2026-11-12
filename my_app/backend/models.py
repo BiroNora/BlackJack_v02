@@ -1,13 +1,12 @@
 import uuid
 
 from flask_sqlalchemy import SQLAlchemy
+from my_app.backend.utils import INITIAL_TOKENS
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from sqlalchemy import CheckConstraint
 
 db = SQLAlchemy()
-INITIAL_TOKENS = 1000
-
 
 class User(db.Model):
     __tablename__ = "my_users"

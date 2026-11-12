@@ -1,3 +1,4 @@
+from my_app.backend.utils import ERROR_CODES, INITIAL_TOKENS, MINIMUM_BET
 from sqlalchemy import or_
 import os
 import uuid
@@ -20,10 +21,6 @@ from my_app.backend.game_serializer import GameSerializer
 from my_app.backend.phase_state import PhaseState
 
 load_dotenv()
-
-MINIMUM_BET = 1
-INITIAL_TOKENS = 1000
-ERROR_CODES = ["IC", "IU", "UAE", "CONFLICT"]
 
 # =========================================================================
 # FLASK APPLICATION BASICS
