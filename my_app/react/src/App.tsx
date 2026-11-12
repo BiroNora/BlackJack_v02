@@ -92,10 +92,6 @@ function App() {
       duration: 3000,
       id: "password-changed-toast",
     });
-
-    setTimeout(() => {
-      setIsAuthOpen(true);
-    }, 3000);
   };
 
   return (
@@ -423,17 +419,22 @@ function App() {
                   </PageWrapper>
                 </div>
               );
-            case "CONFLICT":
+            case "CONFLICT": {
+              const targetUserId =
+                gameState.conflict_data?.target_user_id ?? "";
               return (
                 <div>
                   <PageWrapper>
                     <ConflictModal
-                      onResolve={handleConflict}
+                      onResolve={(versionNew) =>
+                        handleConflict(versionNew, targetUserId)
+                      }
                       conflictData={gameState.conflict_data}
                     />
                   </PageWrapper>
                 </div>
               );
+            }
             case "OUT_OF_TOKENS":
               return (
                 <div>
@@ -446,7 +447,7 @@ function App() {
               return (
                 <div>
                   <PageWrapper>
-                    <Restart currTokens={tokens}/>
+                    <Restart currTokens={tokens} />
                   </PageWrapper>
                 </div>
               );

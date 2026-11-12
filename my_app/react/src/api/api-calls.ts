@@ -1,8 +1,7 @@
 import type { ErrorResponse, SessionInitResponse } from "../types/game-types";
 import { v4 as uuidv4 } from "uuid";
 
-export async function initializeSessionAPI(
-): Promise<SessionInitResponse> {
+export async function initializeSessionAPI(): Promise<SessionInitResponse> {
   // 1. Megpróbáljuk lekérni a meglévő azonosítót (ha van)
   const clientUuid = localStorage.getItem("cid") || undefined;
 
@@ -52,9 +51,10 @@ export async function updateUsername(username: string) {
   });
 }
 
-export async function handleConflictAPI(version_new: boolean) {
+export async function handleConflictAPI(version_new: boolean, target_user_id: string) {
   return await callApiEndpoint(`/api/handle_conflict`, "POST", {
     version_new: version_new,
+    target_user_id: target_user_id
   });
 }
 
@@ -215,11 +215,22 @@ export async function callApiEndpoint<T>(
       credentials: "include", // Sütik küldése a sessionhöz
     };
 
-    if (method === "POST") {
-      const effectiveBody = (body ?? {}) as { idempotency_key?: string };
+    const upperMethod = method.toUpperCase();
+
+    if (["POST", "PUT", "PATCH"].includes(upperMethod)) {
+      const effectiveBody = (body ?? {}) as {
+        idempotency_key?: string;
+        clientId?: string;
+      };
       if (!effectiveBody.idempotency_key) {
         effectiveBody.idempotency_key = uuidv4();
       }
+
+      const clientId = localStorage.getItem("cid");
+      if (clientId && !effectiveBody.clientId) {
+        effectiveBody.clientId = clientId;
+      }
+
       options.body = JSON.stringify(effectiveBody);
     }
 

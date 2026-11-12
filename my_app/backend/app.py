@@ -23,6 +23,7 @@ load_dotenv()
 
 MINIMUM_BET = 1
 INITIAL_TOKENS = 1000
+ERROR_CODES = ["IC", "IU", "UAE", "CONFLICT"]
 
 # =========================================================================
 # FLASK APPLICATION BASICS
@@ -197,8 +198,12 @@ def api_error_handler(f):
             return f(*args, **kwargs)  # Meghívjuk az eredeti végpont függvényt
 
         except ValueError as e:
-            # Specifikus hiba (pl. pakli üres, érvénytelen adat)
+            error_msg = str(e)
             db.session.rollback()
+
+            if error_msg in ERROR_CODES:
+                return jsonify({"status": error_msg}), 200
+
             game = kwargs.get("game")
             user = kwargs.get("user")
 
@@ -220,7 +225,7 @@ def api_error_handler(f):
 
         except Exception as e:
             db.session.rollback()
-            # print(f"Váratlan szerver hiba az API végponton: {e}")
+            print(f"Váratlan szerver hiba az API végponton: {e}")
             return (
                 jsonify(
                     {
@@ -1017,7 +1022,10 @@ def clear_game_state(user, game):
 
 # 20
 @app.route("/api/forgot_password", methods=["POST"])
-@limiter.limit("5 per minute")
+@limiter.limit(
+    "5 per minute",
+    key_func=lambda: request.get_json().get("identifier", get_remote_address()),
+)
 @api_error_handler
 @with_user_service
 def forgot_password(user_service):
@@ -1071,26 +1079,87 @@ def forgot_password(user_service):
 @with_user_service
 def reset_password(token, user_service):
     serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
+
+    # I. Jelszóváltoztatás
     try:
         # A token 5 percig (300 másodpercig) érvényes
         identifier = serializer.loads(token, salt="password-reset-salt", max_age=300)
     except Exception:
         return jsonify({"error": "The link is invalid or has expired."}), 400
 
-    data = request.get_json()
+    data = request.get_json() or {}
     new_password = data.get("password")
 
-    if not new_password:
+    if not new_password or not new_password.strip():
         return jsonify({"status": "IC"}), 200
 
-    user = user_service.get_user_by_identifier(identifier)
-
-    if not user:
+    target_user = user_service.get_user_by_identifier(identifier)
+    if not target_user:
         return jsonify({"status": "IC"}), 200
 
-    user_service.update_password(user, new_password)
+    user_service.update_password(target_user, new_password)
 
-    return jsonify({"status": "success"}), 200
+    # II. User/ek ellenőrzése
+    # régi mentett
+    target_user = user_service.get_user_by_identifier(identifier)
+
+    # jelenlegi
+    curr_user_id = data.get("clientId")
+
+    if curr_user_id:
+        curr_user = (
+            user_service.db.query(User).filter_by(client_id=curr_user_id).first()
+        )
+
+    raw_game = getattr(target_user, "current_game_state", None)
+    if isinstance(raw_game, dict):
+        game = Game.deserialize(raw_game)
+    else:
+        game = Game()
+
+    if curr_user and str(target_user.id) != str(curr_user.id):
+        session["pending_target_user_id"] = str(target_user.id)
+        conflict_game_state = GameSerializer.serialize_by_context(
+            game, "handle_conflict"
+        )
+        conflict_game_state["target_phase"] = "CONFLICT"
+
+        return (
+            jsonify(
+                {
+                    "status": "CONFLICT",
+                    "game_state": conflict_game_state,
+                    "conflict_data": {
+                        "existing_user": {"balance": target_user.tokens},
+                        "current_session": {"balance": curr_user.tokens},
+                        "target_user_id": str(target_user.id),
+                    },
+                    "current_tokens": curr_user.tokens,
+                    "is_guest": curr_user.is_guest,
+                    "username": curr_user.user_name,
+                }
+            ),
+            200,
+        )
+
+    # Ha nincs konfliktus (ugyanaz a user), folytatódik a sima mentés...
+    active_user = target_user
+    active_user.is_guest = False
+    user_service.db.commit()
+
+    return (
+        jsonify(
+            {
+                "status": "success",
+                "current_tokens": active_user.tokens,
+                "is_guest": active_user.is_guest,
+                "username": active_user.user_name,
+                "game_state": GameSerializer.serialize_by_context(game, "bet"),
+                "game_state_hint": "PASSWORD_SUCCESSFULLY_CHANGED",
+            }
+        ),
+        200,
+    )
 
 
 # 22

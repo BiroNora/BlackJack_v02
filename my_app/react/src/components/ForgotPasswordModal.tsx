@@ -58,15 +58,6 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordProps> = ({
         });
         return;
       }
-
-      onCloseForm();
-
-      setTimeout(() => {
-        toast("Please log in with your new password.", {
-          duration: 3000,
-          id: "please-login-toast",
-        });
-      }, 3000);
     } catch {
       toast("Failed to reset password", { duration: 3000 });
     } finally {

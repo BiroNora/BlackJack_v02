@@ -58,6 +58,7 @@ export interface ConflictDetails {
   current_session: {
     balance: number;
   };
+  target_user_id: string;
 }
 
 export interface PlayerData {
@@ -124,7 +125,7 @@ export type GameStateMachineHookResult = {
   handleUpdateUsername: (
     username: string,
   ) => Promise<{ status: string } | void>;
-  handleConflict: (version_new: boolean) => Promise<{ status: string } | void>;
+  handleConflict: (version_new: boolean, target_user_id: string) => Promise<{ status: string } | void>;
   handleCloseNewPassCase: () => void;
   handleForgotPassword: (
     identifier: string,

@@ -32,6 +32,7 @@ import {
 import { gameReducer, initialGameDataState } from "../context/gameReducer";
 import type {
   ApiResponse,
+  ConflictDetails,
   GameState,
   GameStateData,
   GameStateMachineHookResult,
@@ -277,19 +278,14 @@ export function useGameStateMachine(): GameStateMachineHookResult {
     [executeAsyncAction, handleApiAction, transitionToState],
   );
 
-  const handleCloseNewPassCase = useCallback(() => {
-    sessionStorage.removeItem("_rf_");
-
-    transitionToState("BETTING" as GameState, { target_phase: "BETTING" });
-  }, [transitionToState]);
-
   const handleConflict = useCallback(
     async (version_new: boolean): Promise<{ status: string } | void> => {
       let resultStatus = "success";
+      const targetUserId = state.target_user_id;
 
       await executeAsyncAction(async () => {
         const data = await handleApiAction(() =>
-          handleConflictAPI(version_new),
+          handleConflictAPI(version_new, targetUserId),
         );
 
         const resData = data as { status?: string; is_guest?: boolean };
@@ -308,7 +304,7 @@ export function useGameStateMachine(): GameStateMachineHookResult {
 
       return { status: resultStatus };
     },
-    [executeAsyncAction, handleApiAction, transitionToState],
+    [executeAsyncAction, handleApiAction, state.target_user_id, transitionToState],
   );
 
   const handleForgotPassword = useCallback(
@@ -360,13 +356,40 @@ export function useGameStateMachine(): GameStateMachineHookResult {
           setForgotPasswordSubmit(token, password),
         );
 
-        const resData = data as { status?: string };
+        const resData = data as {
+          status?: string;
+          is_guest?: boolean;
+          username?: string;
+          conflict_data?: ConflictDetails;
+        };
         if (resData && resData.status === "IC") {
           resultStatus = resData.status;
           return;
+        }sessionStorage.removeItem("_rf_");
+        const response = extractGameStateData(data);
+
+        if (resData && resData.status === "CONFLICT") {
+          resultStatus = "CONFLICT";
+
+          if (resData.conflict_data?.target_user_id) {
+            dispatch({
+              type: 'SET_TARGETUSER_ID',
+              payload: resData.conflict_data.target_user_id
+            });
+          }
+
+          const conflictPayload: Partial<GameStateData> & { conflict_data?: ConflictDetails } = {
+            ...(response || {}),
+            target_phase: "CONFLICT",
+            conflict_data: resData.conflict_data,
+          };
+
+          if (response) {
+            transitionToState(response?.target_phase as GameState, conflictPayload as GameStateData);
+            return;
+          }
         }
 
-        const response = extractGameStateData(data);
         if (!response) return;
         transitionToState(response?.target_phase as GameState, response);
       });
@@ -375,6 +398,12 @@ export function useGameStateMachine(): GameStateMachineHookResult {
     },
     [executeAsyncAction, handleApiAction, transitionToState],
   );
+
+  const handleCloseNewPassCase = useCallback(() => {
+    //sessionStorage.removeItem("_rf_");
+
+    transitionToState("BETTING" as GameState, { target_phase: "BETTING" });
+  }, [transitionToState]);
 
   const handleOnContinue = useCallback(() => {
     executeAsyncAction(async () => {
