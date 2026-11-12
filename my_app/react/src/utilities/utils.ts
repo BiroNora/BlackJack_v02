@@ -69,9 +69,6 @@ export function validatePasswordStrength(password: string): boolean {
   if (!PASSWORD_REGEX_LOWER.test(password)) {
     return false;
   }
-  if (!PASSWORD_REGEX_NUM.test(password)) {
-    return false;
-  }
-
-  return true;
+  return PASSWORD_REGEX_NUM.test(password);
 }
+

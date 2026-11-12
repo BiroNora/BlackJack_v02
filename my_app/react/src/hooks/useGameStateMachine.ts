@@ -38,7 +38,7 @@ import type {
   GameStateMachineHookResult,
   SessionInitResponse,
 } from "../types/game-types";
-import { extractGameStateData } from "../utilities/utils";
+import { extractGameStateData, validatePasswordStrength } from "../utilities/utils";
 
 // A hook visszatérési típusa most inline van deklarálva, nincs külön 'type' definíció.
 export function useGameStateMachine(): GameStateMachineHookResult {
@@ -192,9 +192,27 @@ export function useGameStateMachine(): GameStateMachineHookResult {
       password: string,
       isLogIn: boolean,
     ): Promise<{ status: string } | void> => {
-      if (!password || password.length < 6) {
-        throw new Error("Password must be at least 6 characters long");
+      if (isLogIn && (!email || email.trim() === "")) {
+        throw new Error("Email or Username is required");
       }
+
+      // Ha regisztráció van, mindkettő külön-külön kötelező
+      if (!isLogIn) {
+        if (!email || email.trim() === "") {
+          throw new Error("Email is required");
+        }
+        if (!username || username.trim() === "") {
+          throw new Error("Username is required");
+        }
+      }
+
+      if (!password) {
+        throw new Error("Password is required");
+      }
+      if (!isLogIn && !validatePasswordStrength(password)) {
+        throw new Error("At least 8 characters long upper & lower case & nums required");
+      }
+
       let resultStatus = "success";
 
       await executeAsyncAction(async () => {
@@ -349,6 +367,13 @@ export function useGameStateMachine(): GameStateMachineHookResult {
       token: string,
       password: string,
     ): Promise<{ status: string } | void> => {
+      if (!token || token.trim() === "") {
+        throw new Error("Error, please try again");
+      }
+      if (!password || !validatePasswordStrength(password)) {
+        throw new Error("Password error");
+      }
+
       let resultStatus = "success";
 
       await executeAsyncAction(async () => {

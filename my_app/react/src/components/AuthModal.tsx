@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import toast from "react-hot-toast";
 import { EyeClosed, EyeOpen } from "./EyeIcon";
+import { validatePasswordStrength } from "../utilities/utils";
 
 interface AuthModalProps {
   onClose: () => void;
@@ -69,6 +70,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
+
+    if (!isLogin && !validatePasswordStrength(password)) {
+      toast(
+        "At least 8 characters long upper & lower case & nums required",
+        {
+          id: "password-strength-error",
+          duration: 3000,
+        }
+      );
+      return;
+    }
+    
     setLoading(true);
 
     const emailArg = isLogin ? email : email;
@@ -174,7 +187,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
 
             <small id="password-hint" className="helper-text">
-              At least 6 characters long
+              At least 8 characters long upper & lower case & nums required
             </small>
           </div>
 

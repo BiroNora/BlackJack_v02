@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { EyeClosed, EyeOpen } from "./EyeIcon";
 import { motion } from "motion/react";
 import toast from "react-hot-toast";
+import { validatePasswordStrength } from "../utilities/utils";
 
 interface ForgotPasswordProps {
   onCloseForm: () => void;
@@ -29,8 +30,8 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordProps> = ({
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
-    if (!password || password.length < 6) {
-      toast("Password must be at least 6 characters long", {
+    if (!password || !validatePasswordStrength(password)) {
+      toast("At least 8 characters long upper & lower case & nums required", {
         id: "pass-error",
         duration: 2000,
       });
@@ -135,7 +136,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordProps> = ({
 
           <div>
             <small id="password-hint" className="helper-text">
-              At least 6 characters long
+              At least 8 characters long upper & lower case & nums required
             </small>
           </div>
 
