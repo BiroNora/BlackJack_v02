@@ -1,4 +1,4 @@
-from my_app.backend.utils import ERROR_CODES, INITIAL_TOKENS, MINIMUM_BET
+from my_app.backend.utils import ERROR_CODES, INITIAL_TOKENS, MINIMUM_BET, validate_password_strength
 from sqlalchemy import or_
 import os
 import uuid
@@ -392,6 +392,18 @@ def handle_auth(user_service):
     username = data.get("username")
     password = data.get("password")
     is_login = data.get("is_login")
+
+    if is_login and (not email or not str(email).strip()):
+        return jsonify({"status": "IC"}), 200
+
+    if not is_login:
+        if not email or not str(email).strip() or not username or not str(username).strip():
+            return jsonify({"status": "IC"}), 200
+        if not password or not validate_password_strength(password):
+            return jsonify({"status": "IC"}), 200
+
+    if not password:
+        return jsonify({"status": "IC"}), 200
 
     current_user_id = session.get("user_id")
 
@@ -1075,6 +1087,9 @@ def forgot_password(user_service):
 @api_error_handler
 @with_user_service
 def reset_password(token, user_service):
+    if not token or not str(token).strip():
+        return jsonify({"status": "IC"}), 200
+
     serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 
     # I. Jelszóváltoztatás
