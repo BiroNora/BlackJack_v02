@@ -1,6 +1,7 @@
 from typing import Any, Dict
 from my_app.backend.phase_state import PhaseState
 from my_app.backend.game import BJ_IMMEDIATE_STOP, TOTAL_INITIAL_CARDS
+from my_app.backend.utils import SHUFFLE_THRESHOLD
 
 
 class GameSerializer:
@@ -93,7 +94,7 @@ class GameSerializer:
             if not game.bet_list
             else (
                 PhaseState.SHUFFLING
-                if (d_len == TOTAL_INITIAL_CARDS or d_len < 60)
+                if (d_len == TOTAL_INITIAL_CARDS or d_len < SHUFFLE_THRESHOLD)
                 else PhaseState.INIT_GAME
             )
         )
