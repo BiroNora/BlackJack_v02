@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import toast from "react-hot-toast";
 import {
   addPlayerFromPlayers,
   addSplitPlayerToGame,
@@ -38,7 +37,19 @@ import type {
   GameStateMachineHookResult,
   SessionInitResponse,
 } from "../types/game-types";
-import { extractGameStateData, validatePasswordStrength } from "../utilities/utils";
+import {
+  extractGameStateData,
+  showAuthError,
+  validatePasswordStrength,
+} from "../utilities/utils";
+import {
+  AuthError,
+  MAX_EMAIL_LENGTH,
+  MAX_PASSWORD_LENGTH,
+  MAX_USERNAME_LENGTH,
+  MIN_USERNAME_LENGTH,
+  USERNAME_REGEX,
+} from "../utilities/constants";
 
 // A hook visszatérési típusa most inline van deklarálva, nincs külön 'type' definíció.
 export function useGameStateMachine(): GameStateMachineHookResult {
@@ -210,7 +221,18 @@ export function useGameStateMachine(): GameStateMachineHookResult {
         throw new Error("Password is required");
       }
       if (!isLogIn && !validatePasswordStrength(password)) {
-        throw new Error("At least 8 characters long upper & lower case & nums required");
+        throw new Error(
+          "At least 8 characters long upper & lower case & nums required",
+        );
+      }
+
+      if (
+        (email && email.length > MAX_EMAIL_LENGTH) ||
+        (username && username.length > MAX_USERNAME_LENGTH) ||
+        (password && password.length > MAX_PASSWORD_LENGTH)
+      ) {
+        showAuthError(AuthError.INVALID_CREDENTIALS);
+        return { status: "IC" };
       }
 
       let resultStatus = "success";
@@ -224,6 +246,7 @@ export function useGameStateMachine(): GameStateMachineHookResult {
           status?: string;
           is_guest?: boolean;
           username?: string;
+          client_id?: string;
         };
         if (
           resData &&
@@ -265,7 +288,12 @@ export function useGameStateMachine(): GameStateMachineHookResult {
 
   const handleUpdateUsername = useCallback(
     async (username: string): Promise<{ status: string } | void> => {
-      if (!username || username.length < 3 || username.length > 25) {
+      if (
+        !username ||
+        username.length < MIN_USERNAME_LENGTH ||
+        username.length > MAX_USERNAME_LENGTH ||
+        !USERNAME_REGEX.test(username)
+      ) {
         throw new Error("Username incorrect long");
       }
       let resultStatus = "success";
@@ -322,17 +350,24 @@ export function useGameStateMachine(): GameStateMachineHookResult {
 
       return { status: resultStatus };
     },
-    [executeAsyncAction, handleApiAction, state.target_user_id, transitionToState],
+    [
+      executeAsyncAction,
+      handleApiAction,
+      state.target_user_id,
+      transitionToState,
+    ],
   );
 
   const handleForgotPassword = useCallback(
     async (identifier: string): Promise<{ status: string } | void> => {
       if (!identifier || identifier.trim() === "") {
-        toast("Missing email address", {
-          id: "forgot-pass-error",
-          duration: 2000,
-        });
+        showAuthError(AuthError.EMPTY_FIELD);
         return;
+      }
+
+      if (identifier.length > MAX_EMAIL_LENGTH) {
+        showAuthError(AuthError.INVALID_CREDENTIALS);
+        return { status: "IC" };
       }
 
       let resultStatus = "success";
@@ -390,7 +425,8 @@ export function useGameStateMachine(): GameStateMachineHookResult {
         if (resData && resData.status === "IC") {
           resultStatus = resData.status;
           return;
-        }sessionStorage.removeItem("_rf_");
+        }
+        sessionStorage.removeItem("_rf_");
         const response = extractGameStateData(data);
 
         if (resData && resData.status === "CONFLICT") {
@@ -398,19 +434,24 @@ export function useGameStateMachine(): GameStateMachineHookResult {
 
           if (resData.conflict_data?.target_user_id) {
             dispatch({
-              type: 'SET_TARGETUSER_ID',
-              payload: resData.conflict_data.target_user_id
+              type: "SET_TARGETUSER_ID",
+              payload: resData.conflict_data.target_user_id,
             });
           }
 
-          const conflictPayload: Partial<GameStateData> & { conflict_data?: ConflictDetails } = {
+          const conflictPayload: Partial<GameStateData> & {
+            conflict_data?: ConflictDetails;
+          } = {
             ...(response || {}),
             target_phase: "CONFLICT",
             conflict_data: resData.conflict_data,
           };
 
           if (response) {
-            transitionToState(response?.target_phase as GameState, conflictPayload as GameStateData);
+            transitionToState(
+              response?.target_phase as GameState,
+              conflictPayload as GameStateData,
+            );
             return;
           }
         }

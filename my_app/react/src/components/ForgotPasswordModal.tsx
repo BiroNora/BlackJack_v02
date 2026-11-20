@@ -1,9 +1,12 @@
-import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { EyeClosed, EyeOpen } from "./EyeIcon";
 import { motion } from "motion/react";
-import toast from "react-hot-toast";
-import { validatePasswordStrength } from "../utilities/utils";
+import { showAuthError, validatePasswordStrength } from "../utilities/utils";
+import {
+  AuthError,
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+} from "../utilities/constants";
 
 interface ForgotPasswordProps {
   onCloseForm: () => void;
@@ -31,18 +34,12 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordProps> = ({
     e.preventDefault();
 
     if (!password || !validatePasswordStrength(password)) {
-      toast("At least 8 characters long upper & lower case & nums required", {
-        id: "pass-error",
-        duration: 2000,
-      });
+      showAuthError(AuthError.PASSWORD_WEAKNESS);
       return;
     }
 
     if (password !== confirmPassword) {
-      toast("Passwords do not match", {
-        id: "pass-match-error",
-        duration: 2000,
-      });
+      showAuthError(AuthError.PASSWORD_MISMATCH);
       return;
     }
 
@@ -53,14 +50,11 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordProps> = ({
       const res = await onResetSubmit(token, password);
 
       if (res?.status === "IC") {
-        toast("Invalid or expired token. Please try again.", {
-          duration: 3000,
-          id: "ic-error-toast",
-        });
+        showAuthError(AuthError.EXPIRED_TOKEN);
         return;
       }
     } catch {
-      toast("Failed to reset password", { duration: 3000 });
+      showAuthError(AuthError.PASSWORD_RESET_FAILED);
     } finally {
       setLoading(false);
     }
@@ -98,6 +92,8 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordProps> = ({
                 ref={passwordInputRef}
                 type={showPassword ? "text" : "password"}
                 value={password}
+                minLength={MIN_PASSWORD_LENGTH}
+                maxLength={MAX_PASSWORD_LENGTH}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
@@ -120,6 +116,8 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordProps> = ({
                 id="confirm-password"
                 type={showPassword ? "text" : "password"}
                 value={confirmPassword}
+                minLength={MIN_PASSWORD_LENGTH}
+                maxLength={MAX_PASSWORD_LENGTH}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />

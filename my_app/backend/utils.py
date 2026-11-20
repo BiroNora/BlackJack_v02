@@ -15,9 +15,14 @@ INITIAL_TOKENS = 1000
 ERROR_CODES = ["IC", "IU", "UAE", "CONFLICT"]
 
 MIN_PASSWORD_LENGTH = 8
+MAX_PASSWORD_LENGTH = 64
 PASSWORD_REGEX_UPPER = r"[A-Z]"
 PASSWORD_REGEX_LOWER = r"[a-z]"
 PASSWORD_REGEX_NUM = r"\d"
+
+USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_]{3,25}$")
+MAX_USERNAME_LENGTH = 25
+MAX_EMAIL_LENGTH = 255
 
 def validate_password_strength(password: str) -> bool:
     """

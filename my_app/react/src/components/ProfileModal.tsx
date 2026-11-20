@@ -1,6 +1,12 @@
 import { motion } from "motion/react";
-import { useState } from "react";
-import toast from "react-hot-toast";
+import React, { useState } from "react";
+import { showAuthError } from "../utilities/utils";
+import {
+  AuthError,
+  MAX_USERNAME_LENGTH,
+  MIN_USERNAME_LENGTH,
+  USERNAME_PATTERN_STR,
+} from "../utilities/constants";
 
 interface ProfileModalProps {
   onClose: () => void;
@@ -26,28 +32,28 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     e.preventDefault();
 
     if (!tempUsername || tempUsername.trim() === "") {
-      toast("Username is missing", {
-        id: "pass-error",
-        duration: 2000,
-      });
+      showAuthError(AuthError.USER_MISSING);
       return;
     }
+
+    if (tempUsername.trim().length > MAX_USERNAME_LENGTH) {
+      showAuthError(AuthError.INVALID_USERNAME);
+      return;
+    }
+
     try {
       const result = await saveUsername(tempUsername);
 
       if (result && result.status === "IC") {
-        toast("Invalid username format or already taken", {
-          id: "pass-error",
-          duration: 2000,
-        });
+        showAuthError(AuthError.INVALID_USERNAME_OR);
         return;
       }
 
       setCurrentUsername(tempUsername);
       setIsEditing(false);
-      toast.success("Username updated successfully!", { duration: 2000 });
+      showAuthError(AuthError.USER_UPDATE_SUCCESS);
     } catch {
-      toast("Failed to update username", { duration: 2000 });
+      showAuthError(AuthError.USER_UPDATE_FAILED);
     }
   };
 
@@ -119,9 +125,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 type="text"
                 value={tempUsername}
                 onChange={(e) => setTempUsername(e.target.value)}
-                minLength={3}
-                maxLength={25}
-                pattern="^[a-zA-Z0-9_]{3,25}$"
+                minLength={MIN_USERNAME_LENGTH}
+                maxLength={MAX_USERNAME_LENGTH}
+                pattern={USERNAME_PATTERN_STR}
                 title="3-25 characters. Letters, numbers, and underscores only."
                 autoFocus // Automatikusan fókuszba hozza az inputot, ha rákattintasz a ceruzára
               />

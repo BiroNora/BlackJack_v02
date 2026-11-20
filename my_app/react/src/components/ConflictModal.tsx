@@ -1,7 +1,8 @@
 import { motion } from "motion/react";
-import { useState } from "react";
-import toast from "react-hot-toast";
+import React, { useState } from "react";
 import type { ConflictDetails } from "../types/game-types";
+import { showAuthError } from "../utilities/utils";
+import { AuthError } from "../utilities/constants";
 
 interface ConflictModalProps {
   onResolve: (versionNew: boolean) => Promise<{ status: string } | void>;
@@ -21,23 +22,12 @@ export const ConflictModal: React.FC<ConflictModalProps> = ({
     try {
       const result = await onResolve(versionNew);
 
-      if (result && result.status === "success") {
-        toast("Game state resolved successfully", {
-          id: "conflict-resolve-success",
-          duration: 2000,
-        });
-      } else {
-        toast("Failed to resolve conflict", {
-          id: "conflict-resolve-error",
-          duration: 2000,
-        });
+      if (result && result.status !== "success") {
+        showAuthError(AuthError.CONFLICT_FAILED);
       }
     } catch (error) {
       console.error("Network error during conflict resolution:", error);
-      toast("Network error occurred", {
-        id: "conflict-network-error",
-        duration: 2000,
-      });
+      showAuthError(AuthError.NETWORK_ERROR);
     } finally {
       setLoading(false);
     }
@@ -61,7 +51,7 @@ export const ConflictModal: React.FC<ConflictModalProps> = ({
         <h3>A saved game already exists. Overwrite?</h3>
         <div>Saved Account Balance: {existingBalance}</div>
         <div>Current Session Balance: {sessionBalance}</div>
-        <div className="button-container1" style={{ marginTop: "2rem"}}>
+        <div className="button-container1" style={{ marginTop: "2rem" }}>
           <button
             type="button"
             disabled={loading}

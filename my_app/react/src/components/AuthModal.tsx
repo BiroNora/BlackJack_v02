@@ -1,8 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
-import toast from "react-hot-toast";
 import { EyeClosed, EyeOpen } from "./EyeIcon";
-import { validatePasswordStrength } from "../utilities/utils";
+import { motion } from "motion/react";
+import { showAuthError, validatePasswordStrength } from "../utilities/utils";
+import {
+  AuthError,
+  MAX_EMAIL_LENGTH,
+  MAX_PASSWORD_LENGTH,
+  MAX_USERNAME_LENGTH,
+  MIN_EMAIL_LENGTH,
+  MIN_PASSWORD_LENGTH,
+  MIN_USERNAME_LENGTH,
+  USERNAME_PATTERN_STR,
+} from "../utilities/constants";
 
 interface AuthModalProps {
   onClose: () => void;
@@ -34,10 +43,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   const handleForgotPassword = async () => {
     if (!email || email.trim() === "") {
-      toast("Missing email address", {
-        id: "forgot-pass-error",
-        duration: 2000,
-      });
+      showAuthError(AuthError.EMPTY_FIELD);
       return;
     }
 
@@ -51,18 +57,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
       onClose();
     } catch (err: unknown) {
-      let errorMessage =
-        err instanceof Error ? err.message : "Error sending email";
+      const errorMessage = err instanceof Error ? err.message : "";
 
-      // Ha a backend azt küldi, hogy "User does not exist", azt átírhatod emberibbre is ha akarod:
+      let errorKey = AuthError.DEFAULT;
       if (errorMessage === "IC") {
-        errorMessage = "Invalid credentials";
+        errorKey = AuthError.INVALID_CREDENTIALS;
       }
 
-      toast(errorMessage, {
-        id: "forgot-pass-error",
-        duration: 3000,
-      });
+      showAuthError(errorKey);
     } finally {
       setLoading(false);
     }
@@ -71,17 +73,52 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
-    if (!isLogin && !validatePasswordStrength(password)) {
-      toast(
-        "At least 8 characters long upper & lower case & nums required",
-        {
-          id: "password-strength-error",
-          duration: 3000,
-        }
-      );
-      return;
+    if (isLogin) {
+      // Bejelentkezéskor az email/username és a jelszó nem lehet üres, és nem lehet túl hosszú
+      if (
+        !email ||
+        email.trim().length === 0 ||
+        email.length > MAX_EMAIL_LENGTH
+      ) {
+        showAuthError(AuthError.INVALID_CREDENTIALS_FORMAT);
+        return;
+      }
+      if (
+        !password ||
+        password.trim().length === 0 ||
+        password.length > MAX_PASSWORD_LENGTH
+      ) {
+        showAuthError(AuthError.INVALID_CREDENTIALS_FORMAT);
+        return;
+      }
+    } else {
+      // Regisztráció
+      if (
+        !email ||
+        email.trim().length < MIN_EMAIL_LENGTH ||
+        email.length > MAX_EMAIL_LENGTH
+      ) {
+        showAuthError(AuthError.INVALID_CREDENTIALS_FORMAT);
+        return;
+      }
+
+      // Username regex ellenőrzés regisztrációnál
+      const usernameRegex = new RegExp(USERNAME_PATTERN_STR);
+      if (!username || !usernameRegex.test(username)) {
+        showAuthError(AuthError.INVALID_CREDENTIALS_FORMAT);
+        return;
+      }
+
+      // Jelszó hossza és erőssége
+      if (
+        !password ||
+        password.length > MAX_PASSWORD_LENGTH ||
+        !validatePasswordStrength(password)
+      ) {
+        showAuthError(AuthError.PASSWORD_WEAKNESS);
+        return;
+      }
     }
-    
     setLoading(true);
 
     const emailArg = isLogin ? email : email;
@@ -107,22 +144,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
       onClose();
     } catch (err: unknown) {
-      let errorMessage =
-        err instanceof Error ? err.message : "Authentication failed";
+      const errorMessage = err instanceof Error ? err.message : "";
+
+      let errorKey = AuthError.DEFAULT;
       if (errorMessage === "IC") {
-        errorMessage = "Invalid credentials";
+        errorKey = AuthError.INVALID_CREDENTIALS;
       }
       if (errorMessage === "UAE") {
-        errorMessage = "Email or Username already exists";
+        errorKey = AuthError.USER_EXISTS;
       }
       if (errorMessage === "IU") {
-        errorMessage = "Invalid username format";
+        errorKey = AuthError.INVALID_USERNAME;
       }
 
-      toast(errorMessage, {
-        id: "auth-error-toast",
-        duration: 3000,
-      });
+      showAuthError(errorKey);
     } finally {
       setLoading(false);
     }
@@ -159,6 +194,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               id="email"
               ref={emailInputRef}
               value={email}
+              maxLength={MAX_EMAIL_LENGTH}
+              minLength={!isLogin ? MIN_EMAIL_LENGTH : MIN_USERNAME_LENGTH}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
@@ -173,6 +210,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
+                minLength={MIN_PASSWORD_LENGTH}
+                maxLength={MAX_PASSWORD_LENGTH}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
@@ -209,9 +248,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 placeholder="e.g. player_123"
                 onChange={(e) => setUsername(e.target.value)}
                 autoComplete="username"
-                minLength={3}
-                maxLength={25}
-                pattern="^[a-zA-Z0-9_]{3,25}$"
+                minLength={MIN_USERNAME_LENGTH}
+                maxLength={MAX_USERNAME_LENGTH}
+                pattern={USERNAME_PATTERN_STR}
                 title="3-25 characters. Letters, numbers, and underscores only."
                 required
               />

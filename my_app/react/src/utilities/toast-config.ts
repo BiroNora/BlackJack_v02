@@ -1,7 +1,7 @@
 import type { DefaultToastOptions } from "react-hot-toast";
 
 export const defaultToastOptions: DefaultToastOptions = {
-  duration: 2000,
+  duration: 3000,
   style: {
     borderRadius: "10px",
     padding: "0.5rem",
