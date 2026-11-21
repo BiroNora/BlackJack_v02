@@ -333,11 +333,14 @@ export function useGameStateMachine(): GameStateMachineHookResult {
         const data = await handleApiAction(() =>
           handleConflictAPI(version_new, targetUserId),
         );
-
-        const resData = data as { status?: string; is_guest?: boolean };
+        const resData = data as { status?: string; is_guest?: boolean; client_id?: string };
         if (resData && resData.status === "IC") {
           resultStatus = resData.status;
           return;
+        }
+
+        if (resData && resData.client_id) {
+          localStorage.setItem("cid", resData.client_id);
         }
 
         if (resData && typeof resData.is_guest === "boolean") {
@@ -345,6 +348,11 @@ export function useGameStateMachine(): GameStateMachineHookResult {
         }
         const response = extractGameStateData(data);
         if (!response) return;
+        
+        dispatch({
+          type: 'SET_DECK_LEN',
+          payload: response.deck_len ?? null
+        });
         transitionToState(response?.target_phase as GameState, response);
       });
 

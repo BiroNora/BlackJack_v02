@@ -1,5 +1,6 @@
 import re
 
+from my_app.backend.utils import MAX_USERNAME_LENGTH, USERNAME_PATTERN
 from sqlalchemy import or_
 
 from my_app.backend.app import User
@@ -60,8 +61,8 @@ class UserService:
             return target_user
 
         else:
-            # --- REGISZTRÁCIÓ ---
-            if not username or not re.match(r"^[a-zA-Z0-9_]{3,30}$", username):
+            # --- REGISZTRÁCIÓ --- 
+            if not username or not USERNAME_PATTERN.fullmatch(username):
                 raise ValueError("IU")  # Invalid Username format
 
             existing_user = (
@@ -185,9 +186,11 @@ class UserService:
 
     def update_username(self, user, new_username):
         if (
-            not new_username
-            or not re.match(r"^[a-zA-Z0-9_]{3,25}$", new_username)
-            or not user
+            not user
+            or not new_username
+            or not isinstance(new_username, str)
+            or len(new_username) > MAX_USERNAME_LENGTH
+            or not USERNAME_PATTERN.fullmatch(new_username)
         ):
             return None
 

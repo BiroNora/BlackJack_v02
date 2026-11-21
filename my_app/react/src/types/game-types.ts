@@ -48,6 +48,7 @@ export interface ApiResponse {
   game_state: GameStateData; // Csak a játék adatai
   game_state_hint: string;
   conflict_data?: ConflictDetails;
+  client_id?: string;
 }
 
 export interface ConflictDetails {

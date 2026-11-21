@@ -36,7 +36,7 @@ class GameSerializer:
             return GameSerializer.serialize_start_game(game)
         if "clear_game_state" in p:
             return GameSerializer.serialize_clear_game_state(game)
-        if "handle_conflict" in p or "check_session" in p:
+        if "check_session" in p:
             # Ha a játékosok listája létezik vagy split van, kezeljük splitként
             if getattr(game, "players", None) or getattr(game, "split_req", 0) > 0:
                 return GameSerializer.serialize_split_hand(game)
@@ -58,7 +58,7 @@ class GameSerializer:
         if any(x in p for x in ["hit"]):
             return GameSerializer.serialize_initial_and_hit_state(game)
 
-        if any(x in p for x in ["bet", "retake_bet", "restart", "update_username"]):
+        if any(x in p for x in ["bet", "retake_bet", "restart", "handle_conflict", "update_username"]):
             return GameSerializer.serialize_for_client_bets(game)
 
         return GameSerializer.serialize_for_client_init(game)

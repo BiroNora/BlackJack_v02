@@ -1,4 +1,4 @@
-from my_app.backend.utils import ERROR_CODES, INITIAL_TOKENS, MINIMUM_BET, validate_password_strength
+from my_app.backend.utils import ERROR_CODES, INITIAL_TOKENS, MAX_EMAIL_LENGTH, MAX_PASSWORD_LENGTH, MAX_USERNAME_LENGTH, MINIMUM_BET, TOTAL_INITIAL_CARDS, validate_password_strength
 from sqlalchemy import or_
 import os
 import uuid
@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, timezone
 
 from my_app.backend.models import db, User
 from my_app.backend.services.user_service import UserService
-from my_app.backend.game import TOTAL_INITIAL_CARDS, Game
+from my_app.backend.game import Game
 from my_app.backend.game_serializer import GameSerializer
 from my_app.backend.phase_state import PhaseState
 
@@ -387,22 +387,39 @@ def check_session(user_service):
 @api_error_handler
 @with_user_service
 def handle_auth(user_service):
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get("email")
     username = data.get("username")
     password = data.get("password")
     is_login = data.get("is_login")
 
-    if is_login and (not email or not str(email).strip()):
+    if (
+        (isinstance(email, str) and len(email) > MAX_EMAIL_LENGTH)
+        or (isinstance(username, str) and len(username) > MAX_USERNAME_LENGTH)
+        or (isinstance(password, str) and len(password) > MAX_PASSWORD_LENGTH)
+    ):
+        return jsonify({"status": "IC"}), 200
+
+    if is_login and (not isinstance(email, str) or not email.strip()):
         return jsonify({"status": "IC"}), 200
 
     if not is_login:
-        if not email or not str(email).strip() or not username or not str(username).strip():
-            return jsonify({"status": "IC"}), 200
-        if not password or not validate_password_strength(password):
+        if (
+            not isinstance(email, str)
+            or not email.strip()
+            or not isinstance(username, str)
+            or not username.strip()
+        ):
             return jsonify({"status": "IC"}), 200
 
-    if not password:
+        if (
+            not isinstance(password, str)
+            or not password
+            or not validate_password_strength(password)
+        ):
+            return jsonify({"status": "IC"}), 200
+
+    if not isinstance(password, str) or not password:
         return jsonify({"status": "IC"}), 200
 
     current_user_id = session.get("user_id")
@@ -1038,7 +1055,7 @@ def clear_game_state(user, game):
 @api_error_handler
 @with_user_service
 def forgot_password(user_service):
-    data = request.get_json()
+    data = request.get_json() or {}
     identifier = data.get("identifier")
 
     user = user_service.get_user_by_identifier(identifier)
@@ -1179,7 +1196,7 @@ def reset_password(token, user_service):
 @api_error_handler
 @with_user_service
 def handle_conflict(user_service):
-    data = request.get_json()
+    data = request.get_json() or {}
     version_new = data.get("version_new")
 
     current_user_id = session.get("user_id")
@@ -1198,17 +1215,10 @@ def handle_conflict(user_service):
     # Frissítjük a sessiont a végleges célfiók ID-jára
     session["user_id"] = user.id
 
-    raw_game = getattr(user, "current_game_state", None)
-    if raw_game:
-        game = (
-            Game.deserialize(raw_game)
-            if isinstance(raw_game, (dict, str))
-            else raw_game
-        )
-    else:
-        game = Game()
-        user.current_game_state = game.serialize()
-        user_service.db.commit()
+    game = Game()
+    game.target_phase = PhaseState.BETTING
+    user.current_game_state = game.serialize()
+    user_service.db.commit()
 
     return (
         jsonify(
@@ -1218,6 +1228,7 @@ def handle_conflict(user_service):
                 "current_tokens": user.tokens,
                 "is_guest": user.is_guest,
                 "username": user.user_name,
+                "client_id": user.client_id,
             }
         ),
         200,
@@ -1255,7 +1266,7 @@ def cron_cleanup_guests(user_service):
 @api_error_handler
 @with_user_service
 def update_username(user_service):
-    data = request.get_json()
+    data = request.get_json() or {}
     new_username = data.get("username")
     current_user_id = session.get("user_id")
 
